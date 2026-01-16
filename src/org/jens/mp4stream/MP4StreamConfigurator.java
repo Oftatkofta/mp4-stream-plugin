@@ -1,82 +1,81 @@
 package org.jens.mp4stream;
 
+import java.io.File;
+import java.util.prefs.Preferences;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.micromanager.PropertyMap;
-import org.micromanager.PropertyMaps;
-import org.micromanager.Studio;
 import org.micromanager.data.ProcessorConfigurator;
 
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
+public final class MP4StreamConfigurator implements ProcessorConfigurator {
 
-public class MP4StreamConfigurator implements ProcessorConfigurator {
+   private final PropertyMap settings_;
 
-   private final Studio studio_;
-   private final JFrame frame_ = new JFrame("MP4 stream Settings");
+   private static final Preferences PREFS =
+         Preferences.userNodeForPackage(MP4StreamConfigurator.class);
 
-   private final JTextField fpsField_ = new JTextField("30");
-   private final JTextField crfField_ = new JTextField("20");
-   private final JComboBox<String> presetBox_ =
-         new JComboBox<>(new String[]{"ultrafast","superfast","veryfast","faster","fast","medium"});
-   private final JCheckBox zerolat_ = new JCheckBox("Zero-latency tuning", true);
-   private final JTextField ffmpegField_ = new JTextField("ffmpeg");
+   public static final String KEY_OUTPUT_PATH = "outputPath";
+   public static final String KEY_FFMPEG_PATH = "ffmpegPath"; // empty => use "ffmpeg" on PATH
 
-   public MP4StreamConfigurator(Studio studio, PropertyMap settings) {
-      studio_ = studio;
-      buildUI();
-      load(settings);
+   public MP4StreamConfigurator(PropertyMap settings) {
+      settings_ = settings;
    }
-
-   private void buildUI() {
-      JPanel p = new JPanel(new GridBagLayout());
-      p.setBorder(new TitledBorder("MP4 stream Settings"));
-      GridBagConstraints c = new GridBagConstraints();
-      c.insets = new Insets(4,4,4,4);
-      c.fill = GridBagConstraints.HORIZONTAL;
-
-      int r = 0;
-      c.gridx=0; c.gridy=r; p.add(new JLabel("Nominal FPS:"), c);
-      c.gridx=1; p.add(fpsField_, c); r++;
-
-      c.gridx=0; c.gridy=r; p.add(new JLabel("CRF:"), c);
-      c.gridx=1; p.add(crfField_, c); r++;
-
-      c.gridx=0; c.gridy=r; p.add(new JLabel("Preset:"), c);
-      c.gridx=1; p.add(presetBox_, c); r++;
-
-      c.gridx=0; c.gridy=r; p.add(new JLabel("FFmpeg path:"), c);
-      c.gridx=1; p.add(ffmpegField_, c); r++;
-
-      c.gridx=1; c.gridy=r; p.add(zerolat_, c); r++;
-
-      frame_.add(p);
-      frame_.pack();
-      frame_.setLocationByPlatform(true);
-   }
-
-   private void load(PropertyMap pm) {
-      if (pm == null) return;
-      fpsField_.setText(String.valueOf(pm.getInteger("fps", 30)));
-      crfField_.setText(String.valueOf(pm.getInteger("crf", 20)));
-      presetBox_.setSelectedItem(pm.getString("preset", "veryfast"));
-      ffmpegField_.setText(pm.getString("ffmpeg", "ffmpeg"));
-      zerolat_.setSelected(pm.getBoolean("zerolat", true));
-   }
-
-   @Override
-   public void showGUI() { frame_.setVisible(true); }
-
-   @Override
-   public void cleanup() { frame_.dispose(); }
 
    @Override
    public PropertyMap getSettings() {
-      return PropertyMaps.builder()
-            .putInteger("fps", Integer.parseInt(fpsField_.getText().trim()))
-            .putInteger("crf", Integer.parseInt(crfField_.getText().trim()))
-            .putString("preset", (String) presetBox_.getSelectedItem())
-            .putString("ffmpeg", ffmpegField_.getText().trim())
-            .putBoolean("zerolat", zerolat_.isSelected())
-            .build();
+      return settings_;
+   }
+
+   @Override
+   public void showGUI() {
+      // 1) Output file
+      JFileChooser fc = new JFileChooser();
+      fc.setDialogTitle("Select MP4 output file");
+      fc.setFileFilter(new FileNameExtensionFilter("MP4 video (*.mp4)", "mp4"));
+
+      String last = PREFS.get(KEY_OUTPUT_PATH, "");
+      fc.setSelectedFile(last.isEmpty() ? new File("output.mp4") : new File(last));
+
+      int result = fc.showSaveDialog(null);
+      if (result != JFileChooser.APPROVE_OPTION) {
+         // User cancelled; keep previous setting (if any). Processor will no-op if no outputPath.
+         return;
+      }
+
+      File f = fc.getSelectedFile();
+      String path = f.getAbsolutePath();
+      if (!path.toLowerCase().endsWith(".mp4")) {
+         path = path + ".mp4";
+      }
+      PREFS.put(KEY_OUTPUT_PATH, path);
+
+      // 2) Optional: ask whether to select ffmpeg.exe explicitly
+      int choose = JOptionPane.showConfirmDialog(
+            null,
+            "FFmpeg is expected to be available on PATH.\n\nSelect ffmpeg.exe manually?",
+            "FFmpeg",
+            JOptionPane.YES_NO_OPTION);
+
+      if (choose == JOptionPane.YES_OPTION) {
+         JFileChooser ff = new JFileChooser();
+         ff.setDialogTitle("Select ffmpeg.exe");
+         ff.setFileFilter(new FileNameExtensionFilter("ffmpeg.exe", "exe"));
+
+         String lastFfmpeg = PREFS.get(KEY_FFMPEG_PATH, "");
+         if (!lastFfmpeg.isEmpty()) {
+            ff.setSelectedFile(new File(lastFfmpeg));
+         }
+
+         int r2 = ff.showOpenDialog(null);
+         if (r2 == JFileChooser.APPROVE_OPTION) {
+            PREFS.put(KEY_FFMPEG_PATH, ff.getSelectedFile().getAbsolutePath());
+         }
+      }
+   }
+
+   @Override
+   public void cleanup() {
+      // no-op
    }
 }

@@ -1,198 +1,289 @@
 package org.jens.mp4stream;
 
-import org.micromanager.PropertyMap;
-import org.micromanager.Studio;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.Preferences;
+
 import org.micromanager.data.Image;
 import org.micromanager.data.Processor;
 import org.micromanager.data.ProcessorContext;
+import org.micromanager.data.SummaryMetadata;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+public final class MP4StreamProcessor implements Processor {
 
-public class MP4StreamProcessor implements Processor {
+   private static final Preferences PREFS =
+         Preferences.userNodeForPackage(MP4StreamConfigurator.class);
 
-   private final Studio studio_;
-   private final int fps_;
-   private final int crf_;
-   private final String preset_;
-   private final String ffmpeg_;
-   private final boolean zerolat_;
+   private static final DecimalFormat DT_FMT = new DecimalFormat("0.000");
 
-   private String outPath_ = null;
+   // Reused per-dimension
+   private int width_ = -1;
+   private int height_ = -1;
+   private byte[] plane8_ = null;
+   private BufferedImage grayImg_ = null;
+   private Graphics2D g2d_ = null;
 
-   private Process ffmpegProc_;
-   private OutputStream ffmpegIn_;
-   private final BlockingQueue<byte[]> queue_ = new ArrayBlockingQueue<>(256);
-   private volatile boolean running_ = true;
-   private int dropped_ = 0;
-   private Thread writer_;
+   // FFmpeg session state
+   private FfmpegSession ff_ = null;
+   private long t0Nanos_ = 0L;
+   private int segmentIndex_ = 0;
 
-   private long t0_ = -1;
-   private int w_ = -1, h_ = -1;
-
-   public MP4StreamProcessor(Studio studio, PropertyMap settings) {
-      studio_ = studio;
-      fps_    = settings.getInteger("fps", 30);
-      crf_    = settings.getInteger("crf", 20);
-      preset_ = settings.getString("preset", "veryfast");
-      ffmpeg_ = settings.getString("ffmpeg", "ffmpeg");
-      zerolat_= settings.getBoolean("zerolat", true);
-
-      writer_ = new Thread(() -> {
-         while (running_) {
-            try {
-               byte[] frame = queue_.take();
-               if (ffmpegIn_ != null) ffmpegIn_.write(frame);
-            } catch (InterruptedException | IOException ignore) {}
-         }
-      }, "MP4Writer");
-      writer_.setDaemon(true);
-      writer_.start();
+   @Override
+   public SummaryMetadata processSummaryMetadata(SummaryMetadata summary) {
+      return summary;
    }
 
    @Override
-   public void processImage(Image img, ProcessorContext ctx) {
-      // Prompt once when the pipeline is enabled
-      if (outPath_ == null) {
-         outPath_ = promptForPath();
-         if (outPath_ == null) {
-            studio_.logs().showMessage("MP4 stream: Recording cancelled (no file selected).");
-            ctx.outputImage(img);
-            running_ = false;
-            return;
-         }
+   public void processImage(Image img, ProcessorContext context) {
+      try {
+         // Always forward image downstream, regardless of recorder failures.
+         recordFrameIfConfigured(img);
+      } catch (Exception e) {
+         // Intentionally swallow to not break acquisition.
+         // You can later log to Micro-Manager via Studio logs if you pass Studio context.
+      } finally {
+         context.outputImage(img);
+      }
+   }
+
+   @Override
+   public void cleanup(ProcessorContext context) {
+      stopFfmpeg();
+      disposeOverlay();
+   }
+
+   private void recordFrameIfConfigured(Image img) throws IOException {
+      final String outPath = PREFS.get(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+      if (outPath == null || outPath.trim().isEmpty()) {
+         return; // Not configured (or user cancelled file dialog)
       }
 
       final int w = img.getWidth();
       final int h = img.getHeight();
-
-      if (w != w_ || h != h_) {
-         restartFFmpeg(w, h);
+      if (w <= 0 || h <= 0) {
+         return;
       }
 
-      // Convert to 8-bit grayscale
-      byte[] plane8;
-      if (img.getBytesPerPixel() == 1) {
-         Object raw = img.getRawPixels();
-         if (raw instanceof byte[]) {
-            // Copy so we do not modify MM's internal buffer during overlay
-            byte[] src = (byte[]) raw;
-            plane8 = new byte[src.length];
-            System.arraycopy(src, 0, plane8, 0, src.length);
-         } else if (raw instanceof ByteBuffer) {
-            ByteBuffer bb = (ByteBuffer) raw;
-            plane8 = new byte[bb.remaining()];
-            bb.get(plane8);
-         } else {
-            plane8 = img.getRawPixelsCopy();
+      // Restart on dimension change (new segment file)
+      if (ff_ == null) {
+         startFfmpegForDimensions(outPath, w, h);
+      } else if (w != width_ || h != height_) {
+         startFfmpegForDimensions(outPath, w, h);
+      }
+
+      ensureBuffersForDimensions(w, h);
+
+      // Convert incoming pixels to plane8_
+      convertToGray8(img, plane8_);
+
+      // Overlay Δt in-place
+      overlayDeltaT(plane8_, w, h);
+
+      // Stream to FFmpeg stdin
+      ff_.writeFrame(plane8_);
+   }
+
+   private void startFfmpegForDimensions(String baseOutPath, int w, int h) throws IOException {
+      // Close any existing stream
+      stopFfmpeg();
+
+      width_ = w;
+      height_ = h;
+      segmentIndex_++;
+
+      // MP4 cannot change resolution mid-stream. Segment output to new file.
+      final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
+
+      final String ffmpegPath = PREFS.get(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
+      final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
+
+      // Reasonable default FPS. You can make this configurable later.
+      final String fps = "30";
+
+      List<String> cmd = new ArrayList<>();
+      cmd.add(exe);
+      cmd.add("-y");
+      cmd.add("-f"); cmd.add("rawvideo");
+      cmd.add("-pix_fmt"); cmd.add("gray");
+      cmd.add("-s"); cmd.add(w + "x" + h);
+      cmd.add("-r"); cmd.add(fps);
+      cmd.add("-i"); cmd.add("-");
+
+      // video encoding (CPU-only)
+      cmd.add("-an");
+      cmd.add("-c:v"); cmd.add("libx264");
+      cmd.add("-preset"); cmd.add("veryfast");
+      cmd.add("-crf"); cmd.add("18");
+      cmd.add("-pix_fmt"); cmd.add("yuv420p");
+
+      cmd.add(segPath);
+
+      ff_ = new FfmpegSession(cmd);
+      t0Nanos_ = System.nanoTime();
+
+      // Recreate overlay resources for this dimension
+      disposeOverlay();
+      ensureBuffersForDimensions(w, h);
+   }
+
+   private static String makeSegmentPath(String baseOutPath, int w, int h, int idx) {
+      File f = new File(baseOutPath);
+      String name = f.getName();
+      String parent = f.getParent();
+      if (parent == null) parent = ".";
+
+      String stem = name;
+      if (stem.toLowerCase().endsWith(".mp4")) {
+         stem = stem.substring(0, stem.length() - 4);
+      }
+      String segName = String.format("%s_%dx%d_seg%03d.mp4", stem, w, h, idx);
+      return new File(parent, segName).getAbsolutePath();
+   }
+
+   private void stopFfmpeg() {
+      if (ff_ != null) {
+         try { ff_.close(); } catch (Exception ignored) {}
+         ff_ = null;
+      }
+   }
+
+   private void ensureBuffersForDimensions(int w, int h) {
+      int n = w * h;
+      if (plane8_ == null || plane8_.length != n) {
+         plane8_ = new byte[n];
+      }
+
+      if (grayImg_ == null || grayImg_.getWidth() != w || grayImg_.getHeight() != h) {
+         // Build BufferedImage backed by plane8_
+         grayImg_ = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
+         byte[] backing = ((DataBufferByte) grayImg_.getRaster().getDataBuffer()).getData();
+
+         // We will copy plane8_ into backing each frame before drawing (cheap),
+         // then copy backing back into plane8_ (also cheap). This avoids fragile raster aliasing.
+         // Alternative (alias same array) is possible but more error-prone.
+         g2d_ = grayImg_.createGraphics();
+         g2d_.setFont(new Font("SansSerif", Font.BOLD, 18));
+         g2d_.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+         g2d_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      }
+   }
+
+   private void disposeOverlay() {
+      if (g2d_ != null) {
+         try { g2d_.dispose(); } catch (Exception ignored) {}
+      }
+      g2d_ = null;
+      grayImg_ = null;
+   }
+
+   private static void convertToGray8(Image img, byte[] out8) {
+      final int bpp = img.getBytesPerPixel();
+      final Object raw = img.getRawPixelsCopy();
+
+      if (bpp == 1) {
+         byte[] in = (byte[]) raw;
+         System.arraycopy(in, 0, out8, 0, Math.min(in.length, out8.length));
+         return;
+      }
+
+      if (bpp == 2) {
+         short[] in16 = (short[]) raw;
+         int n = Math.min(in16.length, out8.length);
+         for (int i = 0; i < n; i++) {
+            out8[i] = (byte) ((in16[i] >>> 8) & 0xFF);
          }
-      } else {
-         short[] src = (short[]) img.getRawPixels();
-         plane8 = new byte[src.length];
-         for (int i = 0; i < src.length; i++) {
-            plane8[i] = (byte) ((src[i] & 0xffff) >>> 8);
+         return;
+      }
+
+      // Unsupported; leave black
+      for (int i = 0; i < out8.length; i++) {
+         out8[i] = 0;
+      }
+   }
+
+   private void overlayDeltaT(byte[] plane8, int w, int h) {
+      if (grayImg_ == null || g2d_ == null) {
+         return;
+      }
+
+      // Copy into BufferedImage backing
+      byte[] backing = ((DataBufferByte) grayImg_.getRaster().getDataBuffer()).getData();
+      System.arraycopy(plane8, 0, backing, 0, Math.min(plane8.length, backing.length));
+
+      double dtSec = (System.nanoTime() - t0Nanos_) / 1_000_000_000.0;
+      String text = "\u0394t " + DT_FMT.format(dtSec) + " s";
+
+      // Draw a simple high-contrast label: black shadow then white text
+      g2d_.setColor(java.awt.Color.BLACK);
+      g2d_.drawString(text, 11, 23);
+      g2d_.setColor(java.awt.Color.WHITE);
+      g2d_.drawString(text, 10, 22);
+
+      // Copy back out
+      System.arraycopy(backing, 0, plane8, 0, Math.min(plane8.length, backing.length));
+   }
+
+   // Minimal FFmpeg wrapper that drains stderr to avoid deadlocks.
+   private static final class FfmpegSession implements AutoCloseable {
+      private final Process proc_;
+      private final OutputStream stdin_;
+      private final Thread stderrDrainer_;
+
+      FfmpegSession(List<String> cmd) throws IOException {
+         ProcessBuilder pb = new ProcessBuilder(cmd);
+         pb.redirectErrorStream(false);
+         proc_ = pb.start();
+         stdin_ = new BufferedOutputStream(proc_.getOutputStream(), 1 << 20);
+
+         stderrDrainer_ = new Thread(() -> drain(proc_.getErrorStream()), "ffmpeg-stderr");
+         stderrDrainer_.setDaemon(true);
+         stderrDrainer_.start();
+      }
+
+      void writeFrame(byte[] gray8) throws IOException {
+         stdin_.write(gray8);
+      }
+
+      @Override
+      public void close() throws IOException {
+         try {
+            stdin_.flush();
+         } catch (Exception ignored) {}
+
+         try {
+            stdin_.close();
+         } catch (Exception ignored) {}
+
+         try {
+            proc_.waitFor();
+         } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+         } finally {
+            proc_.destroy();
          }
       }
 
-      // Overlay Δt in top-left (white text)
-      stampTime(plane8, w, h);
-
-      if (!queue_.offer(plane8)) dropped_++;
-
-      // Forward original image unchanged to the rest of the pipeline
-      ctx.outputImage(img);
-   }
-
-   @Override
-   public void cleanup(ProcessorContext ctx) {
-      running_ = false;
-      if (writer_ != null) writer_.interrupt();
-      destroyFFmpeg();
-      if (dropped_ > 0) {
-         studio_.logs().showMessage("MP4 stream dropped " + dropped_ + " frames (encoder back-pressure).");
-      }
-   }
-
-   private void restartFFmpeg(int w, int h) {
-      destroyFFmpeg();
-      w_ = w; h_ = h;
-
-      try {
-         String cmd = ffmpeg_
-               + " -loglevel error -y"
-               + " -f rawvideo -pix_fmt gray8 -s " + w + "x" + h
-               + " -r " + fps_ + " -i -"
-               + " -c:v libx264 -preset " + preset_
-               + " -crf " + crf_
-               + (zerolat_ ? " -tune zerolatency" : "")
-               + " -pix_fmt yuv420p"
-               + " -movflags +faststart+frag_keyframe+empty_moov"
-               + " \"" + outPath_ + "\"";
-
-         ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
-         pb.redirectErrorStream(true);
-         ffmpegProc_ = pb.start();
-         ffmpegIn_ = ffmpegProc_.getOutputStream();
-
-         // Drain FFmpeg output to avoid deadlock on full pipe
-         new Thread(() -> {
-            try (BufferedReader br =
-                  new BufferedReader(new InputStreamReader(ffmpegProc_.getInputStream()))) {
-               while (br.readLine() != null) { /* ignore */ }
-            } catch (IOException ignore) {}
-         }, "FFmpeg-Drain").start();
-
-         t0_ = -1;
-         studio_.logs().logMessage("MP4 stream: ffmpeg started for " + w + "x" + h);
-
-      } catch (Exception e) {
-         studio_.logs().showError("MP4 stream: FFmpeg failed to start: " + e.getMessage());
-      }
-   }
-
-   private void destroyFFmpeg() {
-      try {
-         if (ffmpegIn_ != null) ffmpegIn_.close();
-      } catch (IOException ignore) {}
-      if (ffmpegProc_ != null) ffmpegProc_.destroy();
-      ffmpegProc_ = null;
-      ffmpegIn_ = null;
-   }
-
-   private String promptForPath() {
-      JFileChooser fc = new JFileChooser();
-      fc.setDialogTitle("Choose MP4 output file");
-      fc.setSelectedFile(new File("recording.mp4"));
-      int r = fc.showSaveDialog(null);
-      if (r == JFileChooser.APPROVE_OPTION) {
-         File f = fc.getSelectedFile();
-         if (!f.getName().toLowerCase().endsWith(".mp4")) {
-            f = new File(f.getAbsolutePath() + ".mp4");
+      private static void drain(InputStream in) {
+         byte[] buf = new byte[8192];
+         try {
+            while (in.read(buf) >= 0) {
+               // discard; you can log later if desired
+            }
+         } catch (IOException ignored) {
+         } finally {
+            try { in.close(); } catch (Exception ignored2) {}
          }
-         return f.getAbsolutePath();
       }
-      return null;
-   }
-
-   private void stampTime(byte[] plane8, int w, int h) {
-      long now = System.nanoTime();
-      if (t0_ < 0) t0_ = now;
-      double t = (now - t0_) / 1e9;
-
-      BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
-      bi.getRaster().setDataElements(0, 0, w, h, plane8);
-
-      Graphics2D g = bi.createGraphics();
-      g.setColor(Color.WHITE);
-      g.setFont(new Font("Monospaced", Font.PLAIN, 24));
-      g.drawString(String.format("t = %.3f s", t), 10, 30);
-      g.dispose();
-
-      bi.getRaster().getDataElements(0, 0, w, h, plane8);
    }
 }

@@ -1,54 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="MP4stream" default="jar" basedir=".">
+<project name="MP4Stream" default="jar" basedir=".">
+  <property file="build.properties"/>
 
-  <property name="src"   value="src"/>
-  <property name="build" value="build"/>
-  <property name="dist"  value="dist"/>
+  <property name="src.dir" location="src"/>
+  <property name="build.dir" location="build"/>
+  <property name="classes.dir" location="${build.dir}/classes"/>
+  <property name="jar.dir" location="${build.dir}/jar"/>
+  <property name="jar.file" location="${jar.dir}/${plugin.name}.jar"/>
 
-  <!-- Adjust this path to your Micro-Manager install -->
-  <property name="mm.jar" value="C:/Program Files/Micro-Manager-2.0/mmstudio.jar"/>
+  <path id="mm.classpath">
+    <fileset dir="${mm.jars.dir}">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
 
-  <target name="init">
-    <mkdir dir="${build}"/>
-    <mkdir dir="${dist}"/>
+  <target name="clean">
+    <delete dir="${build.dir}"/>
   </target>
 
-  <target name="compile" depends="init">
-    <javac includeantruntime="false" source="1.8" target="1.8"
-           srcdir="${src}" destdir="${build}">
-      <classpath>
-        <pathelement location="${mm.jar}"/>
-      </classpath>
+  <target name="compile">
+    <mkdir dir="${classes.dir}"/>
+    <javac srcdir="${src.dir}"
+           destdir="${classes.dir}"
+           includeantruntime="false"
+           source="1.8" target="1.8" encoding="UTF-8"
+           debug="true">
+      <classpath refid="mm.classpath"/>
+      <!-- Needed for SciJava annotation processing in many setups -->
+      <compilerarg value="-proc:only"/>
+      <compilerarg value="-processorpath"/>
+      <compilerarg pathref="mm.classpath"/>
     </javac>
 
-    <!--
-      Generate SciJava plugin index so Micro-Manager 2.x can discover the plugin.
-      The Indexer scans compiled classes and writes META-INF/json entries into ${build}.
-    -->
-    <java classname="org.scijava.annotations.Indexer" fork="true">
-      <classpath>
-        <pathelement location="${mm.jar}"/>
-        <pathelement location="${build}"/>
-      </classpath>
-      <arg value="${build}"/>
-    </java>
+    <!-- Re-run compilation normally (produces .class files); annotation pass above ensures discovery metadata -->
+    <javac srcdir="${src.dir}"
+           destdir="${classes.dir}"
+           includeantruntime="false"
+           source="1.8" target="1.8" encoding="UTF-8"
+           debug="true">
+      <classpath refid="mm.classpath"/>
+      <compilerarg value="-proc:none"/>
+    </javac>
   </target>
 
   <target name="jar" depends="compile">
-    <jar destfile="${dist}/MP4stream.jar" basedir="${build}">
-      <manifest>
-        <attribute name="Created-By" value="MP4 stream ProcessorPlugin"/>
-        <attribute name="Implementation-Title" value="MP4 stream"/>
-        <attribute name="Implementation-Version" value="1.0.0"/>
-        <attribute name="Implementation-Vendor" value="Jens Eriksson"/>
-      </manifest>
+    <mkdir dir="${jar.dir}"/>
+    <jar destfile="${jar.file}">
+      <fileset dir="${classes.dir}"/>
+      <!-- SciJava discovery index typically ends up under META-INF -->
+      <fileset dir="${classes.dir}" includes="META-INF/**"/>
     </jar>
-    <echo>Built: ${dist}/MP4stream.jar</echo>
+    <echo message="Built: ${jar.file}"/>
   </target>
 
-  <target name="clean">
-    <delete dir="${build}"/>
-    <delete dir="${dist}"/>
+  <target name="install" depends="jar">
+    <copy file="${jar.file}" todir="${mm.mmplugins.dir}" overwrite="true"/>
+    <echo message="Installed to: ${mm.mmplugins.dir}"/>
   </target>
-
 </project>
