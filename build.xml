@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MP4stream" default="jar" basedir=".">
+
+  <property name="src"   value="src"/>
+  <property name="build" value="build"/>
+  <property name="dist"  value="dist"/>
+
+  <!-- Adjust this path to your Micro-Manager install -->
+  <property name="mm.jar" value="C:/Program Files/Micro-Manager-2.0/mmstudio.jar"/>
+
+  <target name="init">
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac includeantruntime="false" source="1.8" target="1.8"
+           srcdir="${src}" destdir="${build}">
+      <classpath>
+        <pathelement location="${mm.jar}"/>
+      </classpath>
+    </javac>
+
+    <!--
+      Generate SciJava plugin index so Micro-Manager 2.x can discover the plugin.
+      The Indexer scans compiled classes and writes META-INF/json entries into ${build}.
+    -->
+    <java classname="org.scijava.annotations.Indexer" fork="true">
+      <classpath>
+        <pathelement location="${mm.jar}"/>
+        <pathelement location="${build}"/>
+      </classpath>
+      <arg value="${build}"/>
+    </java>
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar destfile="${dist}/MP4stream.jar" basedir="${build}">
+      <manifest>
+        <attribute name="Created-By" value="MP4 stream ProcessorPlugin"/>
+        <attribute name="Implementation-Title" value="MP4 stream"/>
+        <attribute name="Implementation-Version" value="1.0.0"/>
+        <attribute name="Implementation-Vendor" value="Jens Eriksson"/>
+      </manifest>
+    </jar>
+    <echo>Built: ${dist}/MP4stream.jar</echo>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+</project>
