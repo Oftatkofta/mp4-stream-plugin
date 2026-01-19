@@ -38,6 +38,13 @@ public final class MP4StreamProcessor implements Processor {
    private FfmpegSession ff_ = null;
    private long t0Nanos_ = 0L;
    private int segmentIndex_ = 0;
+   private final Object ffLock_ = new Object();
+
+
+   // watchdog timer
+   private volatile long lastFrameNanos_ = 0L;
+   private Thread watchdog_ = null;
+   private volatile boolean watchdogRun_ = false;
 
    @Override
    public SummaryMetadata processSummaryMetadata(SummaryMetadata summary) {
@@ -60,6 +67,7 @@ public final class MP4StreamProcessor implements Processor {
    @Override
    public void cleanup(ProcessorContext context) {
       stopFfmpeg();
+      stopWatchdog();
       disposeOverlay();
    }
 
@@ -90,8 +98,15 @@ public final class MP4StreamProcessor implements Processor {
       // Overlay Δt in-place
       overlayDeltaT(plane8_, w, h);
 
+      // Update watchdog timer
+      lastFrameNanos_ = System.nanoTime();
+
       // Stream to FFmpeg stdin
-      ff_.writeFrame(plane8_);
+      synchronized (ffLock_) {
+         if (ff_ != null) {
+            ff_.writeFrame(plane8_);
+         }
+      }
    }
 
    private void startFfmpegForDimensions(String baseOutPath, int w, int h) throws IOException {
@@ -135,8 +150,48 @@ public final class MP4StreamProcessor implements Processor {
       // Recreate overlay resources for this dimension
       disposeOverlay();
       ensureBuffersForDimensions(w, h);
+
+      // Start watchdog
+      lastFrameNanos_ = System.nanoTime();
+      startWatchdog();
+
    }
 
+   private void startWatchdog() {
+      if (watchdog_ != null) {
+         return;
+      }
+      watchdogRun_ = true;
+      watchdog_ = new Thread(() -> {
+         final long timeoutNanos = 1_000_000_000L; // 1 second
+         while (watchdogRun_) {
+            try {
+               Thread.sleep(200);
+            } catch (InterruptedException ie) {
+               Thread.currentThread().interrupt();
+               return;
+            }
+            if (ff_ != null) {
+               long idle = System.nanoTime() - lastFrameNanos_;
+               if (idle > timeoutNanos) {
+                  stopFfmpeg(); // closes stdin => MP4 finalized
+               }
+            }
+         }
+      }, "mp4stream-watchdog");
+      watchdog_.setDaemon(true);
+      watchdog_.start();
+   }
+   
+   private void stopWatchdog() {
+      watchdogRun_ = false;
+      if (watchdog_ != null) {
+         watchdog_.interrupt();
+      }
+      watchdog_ = null;
+   }
+   
+   
    private static String makeSegmentPath(String baseOutPath, int w, int h, int idx) {
       File f = new File(baseOutPath);
       String name = f.getName();
@@ -152,9 +207,11 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void stopFfmpeg() {
-      if (ff_ != null) {
-         try { ff_.close(); } catch (Exception ignored) {}
-         ff_ = null;
+      synchronized (ffLock_) {
+         if (ff_ != null) {
+            try { ff_.close(); } catch (Exception ignored) {}
+            ff_ = null;
+         }
       }
    }
 
