@@ -14,11 +14,14 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.time.Instant;
+
 
 import org.micromanager.data.Image;
 import org.micromanager.data.Processor;
 import org.micromanager.data.ProcessorContext;
 import org.micromanager.data.SummaryMetadata;
+import org.micromanager.data.Metadata;
 
 public final class MP4StreamProcessor implements Processor {
 
@@ -36,9 +39,18 @@ public final class MP4StreamProcessor implements Processor {
 
    // FFmpeg session state
    private FfmpegSession ff_ = null;
-   private long t0Nanos_ = 0L;
    private int segmentIndex_ = 0;
    private final Object ffLock_ = new Object();
+
+   // Timing for Δt overlay
+   private boolean t0IsElapsedMs_ = false;
+   private double t0ElapsedMs_ = 0.0;
+
+   private boolean t0IsReceivedTime_ = false;
+   private long t0ReceivedNs_ = 0L;
+
+   private long t0WallNanos_ = 0L; // last fallback
+
 
 
    // watchdog timer
@@ -85,18 +97,20 @@ public final class MP4StreamProcessor implements Processor {
 
       // Restart on dimension change (new segment file)
       if (ff_ == null) {
-         startFfmpegForDimensions(outPath, w, h);
+         startFfmpegForDimensions(outPath, w, h, img);
       } else if (w != width_ || h != height_) {
-         startFfmpegForDimensions(outPath, w, h);
+         startFfmpegForDimensions(outPath, w, h, img);
       }
-
+      
       ensureBuffersForDimensions(w, h);
 
       // Convert incoming pixels to plane8_
       convertToGray8(img, plane8_);
 
       // Overlay Δt in-place
-      overlayDeltaT(plane8_, w, h);
+      double dtSec = computeDeltaTSeconds(img);
+      overlayDeltaT(plane8_, w, h, dtSec);
+
 
       // Update watchdog timer
       lastFrameNanos_ = System.nanoTime();
@@ -109,7 +123,44 @@ public final class MP4StreamProcessor implements Processor {
       }
    }
 
-   private void startFfmpegForDimensions(String baseOutPath, int w, int h) throws IOException {
+   private double computeDeltaTSeconds(Image img) {
+      // Prefer acquisition elapsed time
+      try {
+         Metadata md = img.getMetadata();
+         if (t0IsElapsedMs_ && md != null && md.hasElapsedTimeMs()) {
+            Double ms = md.getElapsedTimeMs();
+            if (ms != null) {
+               double dtMs = ms.doubleValue() - t0ElapsedMs_;
+               if (dtMs < 0) dtMs = 0;
+               return dtMs / 1000.0;
+            }
+         }
+      } catch (Exception ignored) {}
+   
+      // Fallback: received time
+      try {
+         Metadata md = img.getMetadata();
+         if (t0IsReceivedTime_ && md != null) {
+            String rt = md.getReceivedTime();
+            if (rt != null && !rt.trim().isEmpty()) {
+               Instant inst = Instant.parse(rt.trim());
+               long ns = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
+               long dtNs = ns - t0ReceivedNs_;
+               if (dtNs < 0) dtNs = 0;
+               return dtNs / 1_000_000_000.0;
+            }
+         }
+      } catch (Exception ignored) {}
+   
+      // Last fallback: wall clock since segment start
+      long dtNs = System.nanoTime() - t0WallNanos_;
+      if (dtNs < 0) dtNs = 0;
+      return dtNs / 1_000_000_000.0;
+   }
+   
+   
+   private void startFfmpegForDimensions(String baseOutPath, int w, int h, Image firstImg) throws IOException {
+
       // Close any existing stream
       stopFfmpeg();
 
@@ -145,7 +196,10 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add(segPath);
 
       ff_ = new FfmpegSession(cmd);
-      t0Nanos_ = System.nanoTime();
+
+      // Initialize Δt time zero for this segment
+      initTimeZero(firstImg);
+
 
       // Recreate overlay resources for this dimension
       disposeOverlay();
@@ -156,6 +210,41 @@ public final class MP4StreamProcessor implements Processor {
       startWatchdog();
 
    }
+
+   private void initTimeZero(Image img) {
+      t0IsElapsedMs_ = false;
+      t0IsReceivedTime_ = false;
+   
+      try {
+         Metadata md = img.getMetadata();
+         if (md != null && md.hasElapsedTimeMs()) {
+            Double ms = md.getElapsedTimeMs();
+            if (ms != null) {
+               t0ElapsedMs_ = ms.doubleValue();
+               t0IsElapsedMs_ = true;
+               return;
+            }
+         }
+      } catch (Exception ignored) {}
+   
+      // Fallback: ReceivedTime (ISO-8601)
+      try {
+         Metadata md = img.getMetadata();
+         if (md != null) {
+            String rt = md.getReceivedTime();
+            if (rt != null && !rt.trim().isEmpty()) {
+               Instant inst = Instant.parse(rt.trim());
+               t0ReceivedNs_ = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
+               t0IsReceivedTime_ = true;
+               return;
+            }
+         }
+      } catch (Exception ignored) {}
+   
+      // Last fallback: wall clock
+      t0WallNanos_ = System.nanoTime();
+   }
+   
 
    private void startWatchdog() {
       if (watchdog_ != null) {
@@ -269,7 +358,9 @@ public final class MP4StreamProcessor implements Processor {
       }
    }
 
-   private void overlayDeltaT(byte[] plane8, int w, int h) {
+   private void overlayDeltaT(byte[] plane8, int w, int h, double dtSec) {
+
+
       if (grayImg_ == null || g2d_ == null) {
          return;
       }
@@ -278,7 +369,6 @@ public final class MP4StreamProcessor implements Processor {
       byte[] backing = ((DataBufferByte) grayImg_.getRaster().getDataBuffer()).getData();
       System.arraycopy(plane8, 0, backing, 0, Math.min(plane8.length, backing.length));
 
-      double dtSec = (System.nanoTime() - t0Nanos_) / 1_000_000_000.0;
       String text = "\u0394t " + DT_FMT.format(dtSec) + " s";
 
       // Draw a simple high-contrast label: black shadow then white text
