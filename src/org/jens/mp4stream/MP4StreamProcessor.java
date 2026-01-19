@@ -51,12 +51,21 @@ public final class MP4StreamProcessor implements Processor {
 
    private long t0WallNanos_ = 0L; // last fallback
 
-
-
    // watchdog timer
    private volatile long lastFrameNanos_ = 0L;
    private Thread watchdog_ = null;
    private volatile boolean watchdogRun_ = false;
+
+   // Constant-FPS output 
+   private static final double TARGET_FPS = 30.0;
+   private long nextOutFrameIndex_ = 0;
+   private boolean haveLastFrame_ = false;
+   private byte[] lastFrame8_ = null;
+
+   // Segment time-zero (elapsed-time based)
+   private boolean t0IsElapsedMs_ = false;
+   private double t0ElapsedMs_ = 0.0;
+
 
    @Override
    public SummaryMetadata processSummaryMetadata(SummaryMetadata summary) {
@@ -107,12 +116,41 @@ public final class MP4StreamProcessor implements Processor {
       // Convert incoming pixels to plane8_
       convertToGray8(img, plane8_);
 
-      // Overlay Δt in-place
-      double dtSec = computeDeltaTSeconds(img);
-      overlayDeltaT(plane8_, w, h, dtSec);
 
+      double dtSec = elapsedSinceT0Seconds(img);
+      long targetIndex =
+            (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
 
-      // Update watchdog timer
+      synchronized (ffLock_) {
+         if (ff_ == null) {
+            return;
+         }
+
+         // Fill gaps by duplicating last frame
+         if (haveLastFrame_) {
+            while (nextOutFrameIndex_ < targetIndex) {
+               ff_.writeFrame(lastFrame8_);
+               nextOutFrameIndex_++;
+            }
+         } else {
+            nextOutFrameIndex_ = targetIndex;
+         }
+
+         // Overlay timestamp for *current* frame
+         overlayDeltaT(plane8_, width_, height_, dtSec);
+
+         // Write current frame
+         ff_.writeFrame(plane8_);
+         nextOutFrameIndex_++;
+
+         // Cache for duplication
+         if (lastFrame8_ == null || lastFrame8_.length != plane8_.length) {
+            lastFrame8_ = new byte[plane8_.length];
+         }
+         System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
+         haveLastFrame_ = true;
+      }
+
       lastFrameNanos_ = System.nanoTime();
 
       // Stream to FFmpeg stdin
@@ -173,9 +211,7 @@ public final class MP4StreamProcessor implements Processor {
 
       final String ffmpegPath = PREFS.get(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
-
-      // Reasonable default FPS. You can make this configurable later.
-      final String fps = "30";
+      String fps = String.format(java.util.Locale.US, "%.3f", TARGET_FPS);
 
       List<String> cmd = new ArrayList<>();
       cmd.add(exe);
@@ -183,6 +219,7 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add("-f"); cmd.add("rawvideo");
       cmd.add("-pix_fmt"); cmd.add("gray");
       cmd.add("-s"); cmd.add(w + "x" + h);
+      
       cmd.add("-r"); cmd.add(fps);
       cmd.add("-i"); cmd.add("-");
 
@@ -196,6 +233,11 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add(segPath);
 
       ff_ = new FfmpegSession(cmd);
+      initTimeZero(firstImg);
+      nextOutFrameIndex_ = 0;
+      haveLastFrame_ = false;
+      lastFrame8_ = new byte[w * h];
+
 
       // Initialize Δt time zero for this segment
       initTimeZero(firstImg);
@@ -213,10 +255,8 @@ public final class MP4StreamProcessor implements Processor {
 
    private void initTimeZero(Image img) {
       t0IsElapsedMs_ = false;
-      t0IsReceivedTime_ = false;
-   
       try {
-         Metadata md = img.getMetadata();
+         org.micromanager.data.Metadata md = img.getMetadata();
          if (md != null && md.hasElapsedTimeMs()) {
             Double ms = md.getElapsedTimeMs();
             if (ms != null) {
@@ -226,23 +266,25 @@ public final class MP4StreamProcessor implements Processor {
             }
          }
       } catch (Exception ignored) {}
+      t0ElapsedMs_ = 0.0;
+   }
    
-      // Fallback: ReceivedTime (ISO-8601)
+   private double elapsedSinceT0Seconds(Image img) {
+      if (!t0IsElapsedMs_) {
+         return 0.0;
+      }
       try {
-         Metadata md = img.getMetadata();
-         if (md != null) {
-            String rt = md.getReceivedTime();
-            if (rt != null && !rt.trim().isEmpty()) {
-               Instant inst = Instant.parse(rt.trim());
-               t0ReceivedNs_ = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
-               t0IsReceivedTime_ = true;
-               return;
+         org.micromanager.data.Metadata md = img.getMetadata();
+         if (md != null && md.hasElapsedTimeMs()) {
+            Double ms = md.getElapsedTimeMs();
+            if (ms != null) {
+               double dt = ms.doubleValue() - t0ElapsedMs_;
+               if (dt < 0) dt = 0;
+               return dt / 1000.0;
             }
          }
       } catch (Exception ignored) {}
-   
-      // Last fallback: wall clock
-      t0WallNanos_ = System.nanoTime();
+      return 0.0;
    }
    
 
