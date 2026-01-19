@@ -62,10 +62,6 @@ public final class MP4StreamProcessor implements Processor {
    private boolean haveLastFrame_ = false;
    private byte[] lastFrame8_ = null;
 
-   // Segment time-zero (elapsed-time based)
-   private boolean t0IsElapsedMs_ = false;
-   private double t0ElapsedMs_ = 0.0;
-
 
    @Override
    public SummaryMetadata processSummaryMetadata(SummaryMetadata summary) {
@@ -95,71 +91,77 @@ public final class MP4StreamProcessor implements Processor {
    private void recordFrameIfConfigured(Image img) throws IOException {
       final String outPath = PREFS.get(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
       if (outPath == null || outPath.trim().isEmpty()) {
-         return; // Not configured (or user cancelled file dialog)
+         return;
       }
-
+   
       final int w = img.getWidth();
       final int h = img.getHeight();
       if (w <= 0 || h <= 0) {
          return;
       }
-
-      // Restart on dimension change (new segment file)
+   
+      // Start/restart on dimension change
       if (ff_ == null) {
          startFfmpegForDimensions(outPath, w, h, img);
       } else if (w != width_ || h != height_) {
          startFfmpegForDimensions(outPath, w, h, img);
       }
-      
+   
       ensureBuffersForDimensions(w, h);
-
-      // Convert incoming pixels to plane8_
+   
+      // Convert incoming pixels to gray8
       convertToGray8(img, plane8_);
-
-
+   
+      // Elapsed time (seconds) since segment start
       double dtSec = elapsedSinceT0Seconds(img);
-      long targetIndex =
-            (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
-
+   
+      // Target output frame index for CFR
+      long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
+   
       synchronized (ffLock_) {
          if (ff_ == null) {
             return;
          }
-
-         // Fill gaps by duplicating last frame
+   
+         // Ensure lastFrame buffer
+         if (lastFrame8_ == null || lastFrame8_.length != plane8_.length) {
+            lastFrame8_ = new byte[plane8_.length];
+            haveLastFrame_ = false;
+         }
+   
+         // 1) If we are behind, duplicate last encoded frame to catch up
          if (haveLastFrame_) {
             while (nextOutFrameIndex_ < targetIndex) {
                ff_.writeFrame(lastFrame8_);
                nextOutFrameIndex_++;
             }
          } else {
+            // No previous frame yet; jump counter
             nextOutFrameIndex_ = targetIndex;
          }
-
-         // Overlay timestamp for *current* frame
-         overlayDeltaT(plane8_, width_, height_, dtSec);
-
-         // Write current frame
-         ff_.writeFrame(plane8_);
-         nextOutFrameIndex_++;
-
-         // Cache for duplication
-         if (lastFrame8_ == null || lastFrame8_.length != plane8_.length) {
-            lastFrame8_ = new byte[plane8_.length];
-         }
-         System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
-         haveLastFrame_ = true;
-      }
-
-      lastFrameNanos_ = System.nanoTime();
-
-      // Stream to FFmpeg stdin
-      synchronized (ffLock_) {
-         if (ff_ != null) {
+   
+         // 2) Write exactly ONE frame for this index, only if not already written
+         if (nextOutFrameIndex_ == targetIndex) {
+            overlayDeltaT(plane8_, w, h, dtSec);
+   
             ff_.writeFrame(plane8_);
+            nextOutFrameIndex_++;
+   
+            // Cache encoded frame for duplication
+            System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
+            haveLastFrame_ = true;
+         } else {
+            // Acquisition is faster than TARGET_FPS: drop this frame,
+            // but keep it as the most recent candidate for the next index.
+            System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
+            haveLastFrame_ = true;
          }
       }
+   
+      // Watchdog tick (only once; do not write another frame here)
+      lastFrameNanos_ = System.nanoTime();
    }
+   
 
    private double computeDeltaTSeconds(Image img) {
       // Prefer acquisition elapsed time
