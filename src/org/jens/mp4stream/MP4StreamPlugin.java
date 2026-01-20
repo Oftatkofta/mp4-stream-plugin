@@ -33,7 +33,7 @@ public final class MP4StreamPlugin implements ProcessorPlugin, MMPlugin {
 
    @Override
    public ProcessorFactory createFactory(PropertyMap settings) {
-      return new MP4StreamFactory();
+      return new MP4StreamFactory(settings);
    }
 
    @Override

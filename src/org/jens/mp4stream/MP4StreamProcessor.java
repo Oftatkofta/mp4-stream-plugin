@@ -28,6 +28,9 @@ import org.micromanager.display.DisplaySettings;
 import org.micromanager.display.ChannelDisplaySettings;
 import org.micromanager.display.ComponentDisplaySettings;
 
+import org.micromanager.PropertyMap;
+
+
 
 
 public final class MP4StreamProcessor implements Processor {
@@ -36,10 +39,14 @@ public final class MP4StreamProcessor implements Processor {
          Preferences.userNodeForPackage(MP4StreamConfigurator.class);
 
    private final Studio studio_;
+   private final PropertyMap settings_;
 
-   public MP4StreamProcessor(Studio studio) {
+
+   public MP4StreamProcessor(Studio studio, PropertyMap settings) {
       studio_ = studio;
+      settings_ = settings;
    }
+   
 
    // Reused per-dimension
    private int width_ = -1;
@@ -170,7 +177,8 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void recordFrameIfConfigured(Image img) throws IOException {
-   final String outPath = PREFS.get(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+   final String outPath = settings_.getString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+
    if (outPath == null || outPath.trim().isEmpty()) {
       return;
    }
@@ -336,7 +344,8 @@ public final class MP4StreamProcessor implements Processor {
       // MP4 cannot change resolution mid-stream. Segment output to new file.
       final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
 
-      final String ffmpegPath = PREFS.get(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
+      final String ffmpegPath = settings_.getString(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
+
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
       
       // Build FFmpeg command as cmd-list
