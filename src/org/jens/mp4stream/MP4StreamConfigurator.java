@@ -92,7 +92,7 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       }
 
       // Persist to PIPELINE settings (this is what fixes enable-toggle inconsistency)
-      PropertyMaps.Builder b = PropertyMaps.builder();
+      PropertyMap.Builder b = PropertyMaps.builder();
       b.putString(KEY_OUTPUT_PATH, outPath);
       b.putString(KEY_FFMPEG_PATH, ffmpegPath == null ? "" : ffmpegPath);
       settings_ = b.build();
