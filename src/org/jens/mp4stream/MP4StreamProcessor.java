@@ -84,6 +84,9 @@ public final class MP4StreamProcessor implements Processor {
    // How long we wait for a 2nd frame before discarding (Snap will time out)
    private static final long ARM_TIMEOUT_NANOS = 800_000_000L; // 0.8 s
 
+   private static final boolean USE_LIVE_DISPLAY_SCALING = true;
+
+
    private static final class DisplayScaling {
       final long min;
       final long max;
@@ -188,7 +191,13 @@ public final class MP4StreamProcessor implements Processor {
    ensureBuffersForDimensions(w, h);
 
    // Convert incoming pixels to gray8
-   convertToGray8(img, plane8_);
+   if (USE_LIVE_DISPLAY_SCALING) {
+      DisplayScaling sc = getLiveDisplayScaling(img);
+      convertToGray8WithScaling(img, plane8_, sc.min, sc.max, sc.gamma);
+   } else {
+      convertToGray8(img, plane8_);
+   }
+   
 
    // Elapsed time (seconds) since segment start
    double dtSec = elapsedSinceT0Seconds(img);
@@ -580,6 +589,62 @@ public final class MP4StreamProcessor implements Processor {
          out8[i] = 0;
       }
    }
+
+   private static void convertToGray8WithScaling(Image img, byte[] out8, long min, long max, double gamma) {
+
+   final int bpp = img.getBytesPerPixel();
+   final Object raw = img.getRawPixelsCopy();
+
+   if (max <= min) {
+      // avoid divide-by-zero; fall back to simple mapping
+      convertToGray8(img, out8);
+      return;
+   }
+   if (!(gamma > 0.0)) {
+      gamma = 1.0;
+   }
+   
+   final double invRange = 1.0 / (double) (max - min);
+   // Micro-Manager display gamma behaves like: out = in^gamma
+   final double gammaExp = gamma;
+   
+   if (bpp == 1) {
+      byte[] in = (byte[]) raw;
+      int n = Math.min(in.length, out8.length);
+      for (int i = 0; i < n; i++) {
+         int v = in[i] & 0xFF;
+         double x = (v - (double) min) * invRange;
+         if (x < 0) x = 0;
+         if (x > 1) x = 1;
+         if (gamma != 1.0) {
+            x = Math.pow(x, gammaExp);
+         }
+         out8[i] = (byte) (int) Math.round(255.0 * x);
+      }
+      return;
+   }
+
+   if (bpp == 2) {
+      short[] in16 = (short[]) raw;
+      int n = Math.min(in16.length, out8.length);
+      for (int i = 0; i < n; i++) {
+         int v = in16[i] & 0xFFFF; // unsigned
+         double x = (v - (double) min) * invRange;
+         if (x < 0) x = 0;
+         if (x > 1) x = 1;
+         if (gamma != 1.0) {
+            x = Math.pow(x, gammaExp);
+         }
+         out8[i] = (byte) (int) Math.round(255.0 * x);
+      }
+      return;
+   }
+
+   // Unsupported; black
+   for (int i = 0; i < out8.length; i++) {
+      out8[i] = 0;
+   }
+}
 
 
    private void overlayDeltaT(byte[] plane8, int w, int h, double dtSec) {
