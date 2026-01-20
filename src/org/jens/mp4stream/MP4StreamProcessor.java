@@ -61,6 +61,7 @@ public final class MP4StreamProcessor implements Processor {
    private long nextOutFrameIndex_ = 0;
    private boolean haveLastFrame_ = false;
    private byte[] lastFrame8_ = null;
+   
 
 
    @Override
@@ -89,79 +90,79 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void recordFrameIfConfigured(Image img) throws IOException {
-      final String outPath = PREFS.get(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
-      if (outPath == null || outPath.trim().isEmpty()) {
-         return;
-      }
-   
-      final int w = img.getWidth();
-      final int h = img.getHeight();
-      if (w <= 0 || h <= 0) {
-         return;
-      }
-   
-      // Start/restart on dimension change
-      if (ff_ == null) {
-         startFfmpegForDimensions(outPath, w, h, img);
-      } else if (w != width_ || h != height_) {
-         startFfmpegForDimensions(outPath, w, h, img);
-      }
-   
-      ensureBuffersForDimensions(w, h);
-   
-      // Convert incoming pixels to gray8
-      convertToGray8(img, plane8_);
-   
-      // Elapsed time (seconds) since segment start
-      double dtSec = elapsedSinceT0Seconds(img);
-   
-      // Target output frame index for CFR
-      long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
-   
-      synchronized (ffLock_) {
-         if (ff_ == null) {
-            return;
-         }
-   
-         // Ensure lastFrame buffer
-         if (lastFrame8_ == null || lastFrame8_.length != plane8_.length) {
-            lastFrame8_ = new byte[plane8_.length];
-            haveLastFrame_ = false;
-         }
-   
-         // 1) If we are behind, duplicate last encoded frame to catch up
-         if (haveLastFrame_) {
-            while (nextOutFrameIndex_ < targetIndex) {
-               ff_.writeFrame(lastFrame8_);
-               nextOutFrameIndex_++;
-            }
-         } else {
-            // No previous frame yet; jump counter
-            nextOutFrameIndex_ = targetIndex;
-         }
-   
-         // 2) Write exactly ONE frame for this index, only if not already written
-         if (nextOutFrameIndex_ == targetIndex) {
-            overlayDeltaT(plane8_, w, h, dtSec);
-   
-            ff_.writeFrame(plane8_);
-            nextOutFrameIndex_++;
-   
-            // Cache encoded frame for duplication
-            System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
-            haveLastFrame_ = true;
-         } else {
-            // Acquisition is faster than TARGET_FPS: drop this frame,
-            // but keep it as the most recent candidate for the next index.
-            System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
-            haveLastFrame_ = true;
-         }
-      }
-   
-      // Watchdog tick (only once; do not write another frame here)
-      lastFrameNanos_ = System.nanoTime();
+   final String outPath = PREFS.get(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+   if (outPath == null || outPath.trim().isEmpty()) {
+      return;
    }
-   
+
+   final int w = img.getWidth();
+   final int h = img.getHeight();
+   if (w <= 0 || h <= 0) {
+      return;
+   }
+
+   // Start/restart on dimension change
+   if (ff_ == null) {
+      startFfmpegForDimensions(outPath, w, h, img);
+   } else if (w != width_ || h != height_) {
+      startFfmpegForDimensions(outPath, w, h, img);
+   }
+
+   ensureBuffersForDimensions(w, h);
+
+   // Convert incoming pixels to gray8
+   convertToGray8(img, plane8_);
+
+   // Elapsed time (seconds) since segment start
+   double dtSec = elapsedSinceT0Seconds(img);
+
+   // Target output frame index for CFR
+   long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
+
+   synchronized (ffLock_) {
+      if (ff_ == null) {
+         return;
+      }
+
+      // Ensure lastFrame buffer
+      if (lastFrame8_ == null || lastFrame8_.length != plane8_.length) {
+         lastFrame8_ = new byte[plane8_.length];
+         haveLastFrame_ = false;
+      }
+
+      // 1) If we are behind, duplicate last encoded frame to catch up
+      if (haveLastFrame_) {
+         while (nextOutFrameIndex_ < targetIndex) {
+            ff_.writeFrame(lastFrame8_);
+            nextOutFrameIndex_++;
+         }
+      } else {
+         // No previous frame yet; jump counter
+         nextOutFrameIndex_ = targetIndex;
+      }
+
+      // 2) Write exactly ONE frame for this index, only if not already written
+      if (nextOutFrameIndex_ == targetIndex) {
+         overlayDeltaT(plane8_, w, h, dtSec);
+
+         ff_.writeFrame(plane8_);
+         nextOutFrameIndex_++;
+
+         // Cache encoded frame for duplication
+         System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
+         haveLastFrame_ = true;
+      } else {
+         // Acquisition is faster than TARGET_FPS: drop this frame,
+         // but keep it as the most recent candidate for the next index.
+         System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
+         haveLastFrame_ = true;
+      }
+   }
+
+   // Watchdog tick (only once; do not write another frame here)
+   lastFrameNanos_ = System.nanoTime();
+}
+
 
    private double computeDeltaTSeconds(Image img) {
       // Prefer acquisition elapsed time
@@ -213,36 +214,33 @@ public final class MP4StreamProcessor implements Processor {
 
       final String ffmpegPath = PREFS.get(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
-      String fps = String.format(java.util.Locale.US, "%.3f", TARGET_FPS);
-
+      
+      // Build FFmpeg command as cmd-list
       List<String> cmd = new ArrayList<>();
       cmd.add(exe);
-      cmd.add("-y");
-      cmd.add("-f"); cmd.add("rawvideo");
-      cmd.add("-pix_fmt"); cmd.add("gray");
-      cmd.add("-s"); cmd.add(w + "x" + h);
+      cmd.add("-y"); // overwrite existing file
+      cmd.add("-f"); cmd.add("rawvideo"); // input format
+      cmd.add("-pix_fmt"); cmd.add("gray"); // pixel format
+      cmd.add("-s"); cmd.add(w + "x" + h); // size
       
-      cmd.add("-r"); cmd.add(fps);
-      cmd.add("-i"); cmd.add("-");
+      String fps = String.format(java.util.Locale.US, "%.3f", TARGET_FPS);
+      cmd.add("-r"); cmd.add(fps); // frame rate
+      cmd.add("-i"); cmd.add("-"); // input from stdin
 
       // video encoding (CPU-only)
-      cmd.add("-an");
-      cmd.add("-c:v"); cmd.add("libx264");
-      cmd.add("-preset"); cmd.add("veryfast");
-      cmd.add("-crf"); cmd.add("18");
-      cmd.add("-pix_fmt"); cmd.add("yuv420p");
+      cmd.add("-an"); // no audio
+      cmd.add("-c:v"); cmd.add("libx264"); // video codec
+      cmd.add("-preset"); cmd.add("veryfast"); // preset
+      cmd.add("-crf"); cmd.add("18"); // constant rate factor
+      cmd.add("-pix_fmt"); cmd.add("yuv420p"); // pixel format
 
-      cmd.add(segPath);
+      cmd.add(segPath); // output file name
 
       ff_ = new FfmpegSession(cmd);
       initTimeZero(firstImg);
       nextOutFrameIndex_ = 0;
       haveLastFrame_ = false;
-      lastFrame8_ = new byte[w * h];
-
-
-      // Initialize Δt time zero for this segment
-      initTimeZero(firstImg);
+      lastFrame8_ = null;
 
 
       // Recreate overlay resources for this dimension
@@ -289,6 +287,25 @@ public final class MP4StreamProcessor implements Processor {
       return 0.0;
    }
    
+
+   private static String formatElapsedHhMmSsMmm(double dtSec) {
+      if (dtSec < 0) {
+         dtSec = 0;
+      }
+      long totalMs = (long) Math.round(dtSec * 1000.0);
+   
+      long ms = totalMs % 1000;
+      long totalSec = totalMs / 1000;
+   
+      long sec = totalSec % 60;
+      long totalMin = totalSec / 60;
+   
+      long min = totalMin % 60;
+      long hours = totalMin / 60;
+   
+      return String.format(java.util.Locale.US, "%02d:%02d:%02d.%03d", hours, min, sec, ms);
+   }
+
 
    private void startWatchdog() {
       if (watchdog_ != null) {
@@ -413,9 +430,10 @@ public final class MP4StreamProcessor implements Processor {
       byte[] backing = ((DataBufferByte) grayImg_.getRaster().getDataBuffer()).getData();
       System.arraycopy(plane8, 0, backing, 0, Math.min(plane8.length, backing.length));
 
-      String text = "\u0394t " + DT_FMT.format(dtSec) + " s";
+      String text = "\u0394t " + formatElapsedHhMmSsMmm(dtSec);
 
       // Draw a simple high-contrast label: black shadow then white text
+      g2d_.setFont(new Font("Monospaced", Font.BOLD, 18));
       g2d_.setColor(java.awt.Color.BLACK);
       g2d_.drawString(text, 11, 23);
       g2d_.setColor(java.awt.Color.WHITE);
