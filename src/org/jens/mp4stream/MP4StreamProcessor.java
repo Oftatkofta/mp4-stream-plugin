@@ -80,16 +80,6 @@ public final class MP4StreamProcessor implements Processor {
    private boolean haveLastFrame_ = false;
    private byte[] lastFrame8_ = null;
    
-   // --- Arming: do not start recording on a single frame (Snap). ---
-   private boolean pendingArmed_ = false;
-   private long pendingArmedAtNanos_ = 0L;
-   private int pendingW_ = -1;
-   private int pendingH_ = -1;
-   private byte[] pendingFrame8_ = null;
-   private double pendingDtSec_ = 0.0;
-
-   // How long we wait for a 2nd frame before discarding (Snap will time out)
-   private static final long ARM_TIMEOUT_NANOS = 800_000_000L; // 0.8 s
 
    private static final boolean USE_LIVE_DISPLAY_SCALING = true;
 
@@ -178,124 +168,65 @@ public final class MP4StreamProcessor implements Processor {
 
    private void recordFrameIfConfigured(Image img) throws IOException {
       final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
-
-
-   if (outPath == null || outPath.trim().isEmpty()) {
-      return;
-   }
-
-   final int w = img.getWidth();
-   final int h = img.getHeight();
-   if (w <= 0 || h <= 0) {
-      return;
-   }
-
-   // Dimension change while recording -> start a new segment immediately.
-   if (ff_ != null && (w != width_ || h != height_)) {
-      startFfmpegForDimensions(outPath, w, h, img);
-      // Reset arming state (not strictly required, but clean)
-      pendingArmed_ = false;
-   }
-
-   ensureBuffersForDimensions(w, h);
-
-   // Convert incoming pixels to gray8
-   if (USE_LIVE_DISPLAY_SCALING) {
-      DisplayScaling sc = getLiveDisplayScaling(img);
-      convertToGray8WithScaling(img, plane8_, sc.min, sc.max, sc.gamma);
-   } else {
-      convertToGray8(img, plane8_);
+      if (outPath == null || outPath.trim().isEmpty()) {
+         return;
+      }
+   
+      // Only record when Live is running or an acquisition (MDA) is running.
+      if (!shouldRecordNow()) {
+         return;
+      }
+   
+      final int w = img.getWidth();
+      final int h = img.getHeight();
+      if (w <= 0 || h <= 0) {
+         return;
+      }
+   
+      // Start if needed, restart on dimension change
+      if (ff_ == null) {
+         startFfmpegForDimensions(outPath, w, h, img);
+      } else if (w != width_ || h != height_) {
+         startFfmpegForDimensions(outPath, w, h, img);
+      }
+   
+      ensureBuffersForDimensions(w, h);
+   
+      // Convert incoming pixels to gray8
+      if (USE_LIVE_DISPLAY_SCALING) {
+         DisplayScaling sc = getLiveDisplayScaling(img);
+         convertToGray8WithScaling(img, plane8_, sc.min, sc.max, sc.gamma);
+      } else {
+         convertToGray8(img, plane8_);
+      }
+   
+      // Elapsed time (seconds) since segment start (as defined by initTimeZero)
+      double dtSec = elapsedSinceT0Seconds(img);
+   
+      // Write exactly once using the single CFR path
+      writeCfrFrameLocked(plane8_, w, h, dtSec);
    }
    
-
-   // Elapsed time (seconds) since segment start
-   double dtSec = elapsedSinceT0Seconds(img);
-
-   // If not currently recording, require a second frame soon after the first.
-   // This prevents single Snap images from creating a movie file.
-   if (ff_ == null) {
-      long now = System.nanoTime();
-
-      // If we were armed but it took too long, discard the pending frame.
-      if (pendingArmed_ && (now - pendingArmedAtNanos_) > ARM_TIMEOUT_NANOS) {
-         pendingArmed_ = false;
-         pendingFrame8_ = null;
+   private boolean shouldRecordNow() {
+      if (studio_ == null) {
+         return false;
       }
-
-      if (!pendingArmed_) {
-         // Arm on first frame: store it, but do NOT create any file yet.
-         pendingArmed_ = true;
-         pendingArmedAtNanos_ = now;
-         pendingW_ = w;
-         pendingH_ = h;
-         pendingDtSec_ = dtSec;
-
-         pendingFrame8_ = new byte[plane8_.length];
-         System.arraycopy(plane8_, 0, pendingFrame8_, 0, plane8_.length);
-         return;
-      }
-
-      // Second frame arrived within timeout -> start recording now.
-      // Use the pending frame as the "first" frame for time-zero init.
-      startFfmpegForDimensions(outPath, pendingW_, pendingH_, img);
-
-      // Write the current frame
-      writeCfrFrameLocked(plane8_, w, h, dtSec);
-
-
-      // Clear pending state and continue; current frame will be written below.
-      pendingArmed_ = false;
-      pendingFrame8_ = null;
-   }
-
-
-   // Target output frame index for CFR
-   long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
-
-   synchronized (ffLock_) {
-      if (ff_ == null) {
-         return;
-      }
-
-      // Ensure lastFrame buffer
-      if (lastFrame8_ == null || lastFrame8_.length != plane8_.length) {
-         lastFrame8_ = new byte[plane8_.length];
-         haveLastFrame_ = false;
-      }
-
-      // 1) If we are behind, duplicate last encoded frame to catch up
-      if (haveLastFrame_) {
-         while (nextOutFrameIndex_ < targetIndex) {
-            ff_.writeFrame(lastFrame8_);
-            nextOutFrameIndex_++;
+   
+      try {
+         if (studio_.live().isLiveModeOn()) {
+            return true;
          }
-      } else {
-         // No previous frame yet; jump counter
-         nextOutFrameIndex_ = targetIndex;
-      }
-
-      // 2) Write exactly ONE frame for this index, only if not already written
-      if (nextOutFrameIndex_ == targetIndex) {
-         overlayDeltaT(plane8_, w, h, dtSec);
-
-         ff_.writeFrame(plane8_);
-         nextOutFrameIndex_++;
-
-         // Cache encoded frame for duplication
-         System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
-         haveLastFrame_ = true;
-      } else {
-         // Acquisition is faster than TARGET_FPS: drop this frame,
-         // but keep it as the most recent candidate for the next index.
-         System.arraycopy(plane8_, 0, lastFrame8_, 0, plane8_.length);
-         haveLastFrame_ = true;
-      }
+      } catch (Exception ignored) {}
+   
+      try {
+         if (studio_.acquisitions().isAcquisitionRunning()) {
+            return true;
+         }
+      } catch (Exception ignored) {}
+   
+      return false;
    }
-
-   // Watchdog tick (only once; do not write another frame here)
-   lastFrameNanos_ = System.nanoTime();
-}
-
+   
 
    private double computeDeltaTSeconds(Image img) {
       // Prefer acquisition elapsed time
@@ -535,9 +466,6 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void stopFfmpeg() {
-      // Reset arming state
-      pendingArmed_ = false;
-      pendingFrame8_ = null;
 
       synchronized (ffLock_) {
          if (ff_ != null) {
