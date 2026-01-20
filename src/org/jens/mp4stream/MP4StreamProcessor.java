@@ -21,6 +21,7 @@ import org.micromanager.data.Processor;
 import org.micromanager.data.ProcessorContext;
 import org.micromanager.data.SummaryMetadata;
 import org.micromanager.data.Metadata;
+
 import org.micromanager.Studio;
 import org.micromanager.display.DisplayWindow;
 import org.micromanager.display.DisplaySettings;
@@ -28,12 +29,17 @@ import org.micromanager.display.ChannelDisplaySettings;
 import org.micromanager.display.ComponentDisplaySettings;
 
 
+
 public final class MP4StreamProcessor implements Processor {
 
    private static final Preferences PREFS =
          Preferences.userNodeForPackage(MP4StreamConfigurator.class);
 
-   private static final DecimalFormat DT_FMT = new DecimalFormat("0.000");
+   private final Studio studio_;
+
+   public MP4StreamProcessor(Studio studio) {
+      studio_ = studio;
+   }
 
    // Reused per-dimension
    private int width_ = -1;
@@ -78,8 +84,62 @@ public final class MP4StreamProcessor implements Processor {
    // How long we wait for a 2nd frame before discarding (Snap will time out)
    private static final long ARM_TIMEOUT_NANOS = 800_000_000L; // 0.8 s
 
-
-
+   private static final class DisplayScaling {
+      final long min;
+      final long max;
+      final double gamma;
+   
+      DisplayScaling(long min, long max, double gamma) {
+         this.min = min;
+         this.max = max;
+         this.gamma = gamma;
+      }
+   }
+   
+   private DisplayScaling getLiveDisplayScaling(Image img) {
+      // Fallback: full dynamic range
+      long fallbackMin = 0;
+      long fallbackMax = (img.getBytesPerPixel() == 2) ? 65535 : 255;
+      double fallbackGamma = 1.0;
+   
+      if (studio_ == null) {
+         return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
+      }
+   
+      try {
+         DisplayWindow win = studio_.live().getDisplay();
+         if (win == null) {
+            return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
+         }
+   
+         DisplaySettings ds = win.getDisplaySettings();
+         int ch = 0;
+         try {
+            ch = img.getCoords().getChannel();
+         } catch (Exception ignored) {}
+   
+         if (ch < 0 || ch >= ds.getNumberOfChannels()) {
+            ch = 0;
+         }
+   
+         ChannelDisplaySettings cds = ds.getChannelSettings(ch);
+         ComponentDisplaySettings c0 = cds.getComponentSettings(0);
+   
+         long min = c0.getScalingMinimum();
+         long max = c0.getScalingMaximum();
+         double gamma = c0.getScalingGamma();
+   
+         if (max <= min || !(gamma > 0.0)) {
+            return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
+         }
+   
+         return new DisplayScaling(min, max, gamma);
+   
+      } catch (Exception e) {
+         return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
+      }
+   }
+   
 
    @Override
    public SummaryMetadata processSummaryMetadata(SummaryMetadata summary) {
@@ -520,6 +580,7 @@ public final class MP4StreamProcessor implements Processor {
          out8[i] = 0;
       }
    }
+
 
    private void overlayDeltaT(byte[] plane8, int w, int h, double dtSec) {
 
