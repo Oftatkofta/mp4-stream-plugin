@@ -13,9 +13,17 @@ public final class MP4StreamPlugin implements ProcessorPlugin, MMPlugin {
 
    private Studio studio_;
 
+   // Static access point for Factory/Processor wiring
+   private static volatile Studio studioStatic_;
+
+   public static Studio getStudio() {
+      return studioStatic_;
+   }
+
    @Override
    public void setContext(Studio studio) {
       studio_ = studio;
+      studioStatic_ = studio;
    }
 
    @Override

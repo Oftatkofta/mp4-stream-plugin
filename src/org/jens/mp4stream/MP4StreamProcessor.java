@@ -16,12 +16,17 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import java.time.Instant;
 
-
 import org.micromanager.data.Image;
 import org.micromanager.data.Processor;
 import org.micromanager.data.ProcessorContext;
 import org.micromanager.data.SummaryMetadata;
 import org.micromanager.data.Metadata;
+import org.micromanager.Studio;
+import org.micromanager.display.DisplayWindow;
+import org.micromanager.display.DisplaySettings;
+import org.micromanager.display.ChannelDisplaySettings;
+import org.micromanager.display.ComponentDisplaySettings;
+
 
 public final class MP4StreamProcessor implements Processor {
 
