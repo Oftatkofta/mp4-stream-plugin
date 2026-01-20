@@ -162,8 +162,8 @@ public final class MP4StreamProcessor implements Processor {
          // Always forward image downstream, regardless of recorder failures.
          recordFrameIfConfigured(img);
       } catch (Exception e) {
-         // Intentionally swallow to not break acquisition.
-         // You can later log to Micro-Manager via Studio logs if you pass Studio context.
+         e.printStackTrace();
+
       } finally {
          context.outputImage(img);
       }
@@ -177,7 +177,8 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void recordFrameIfConfigured(Image img) throws IOException {
-   final String outPath = settings_.getString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+      final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+
 
    if (outPath == null || outPath.trim().isEmpty()) {
       return;
@@ -344,7 +345,8 @@ public final class MP4StreamProcessor implements Processor {
       // MP4 cannot change resolution mid-stream. Segment output to new file.
       final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
 
-      final String ffmpegPath = settings_.getString(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
+      final String ffmpegPath = getSettingString(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
+
 
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
       
@@ -679,6 +681,25 @@ public final class MP4StreamProcessor implements Processor {
       // Copy back out
       System.arraycopy(backing, 0, plane8, 0, Math.min(plane8.length, backing.length));
    }
+
+   private String getSettingString(String key, String defaultValue) {
+      try {
+         if (settings_ != null) {
+            String v = settings_.getString(key, defaultValue);
+            if (v != null) {
+               return v;
+            }
+         }
+      } catch (Exception ignored) {
+      }
+      // Fallback to Preferences (keeps behavior working even if settings_ is null)
+      try {
+         return PREFS.get(key, defaultValue);
+      } catch (Exception ignored) {
+         return defaultValue;
+      }
+   }
+   
 
    // Minimal FFmpeg wrapper that drains stderr to avoid deadlocks.
    private static final class FfmpegSession implements AutoCloseable {
