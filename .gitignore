@@ -1,5 +1,6 @@
 # Build artifacts
-/build/
+/build/classes/
+/build/org/
 /dist/
 
 # IDE
