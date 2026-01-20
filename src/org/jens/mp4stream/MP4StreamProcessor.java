@@ -62,6 +62,18 @@ public final class MP4StreamProcessor implements Processor {
    private boolean haveLastFrame_ = false;
    private byte[] lastFrame8_ = null;
    
+   // --- Arming: do not start recording on a single frame (Snap). ---
+   private boolean pendingArmed_ = false;
+   private long pendingArmedAtNanos_ = 0L;
+   private int pendingW_ = -1;
+   private int pendingH_ = -1;
+   private byte[] pendingFrame8_ = null;
+   private double pendingDtSec_ = 0.0;
+
+   // How long we wait for a 2nd frame before discarding (Snap will time out)
+   private static final long ARM_TIMEOUT_NANOS = 800_000_000L; // 0.8 s
+
+
 
 
    @Override
@@ -101,11 +113,11 @@ public final class MP4StreamProcessor implements Processor {
       return;
    }
 
-   // Start/restart on dimension change
-   if (ff_ == null) {
+   // Dimension change while recording -> start a new segment immediately.
+   if (ff_ != null && (w != width_ || h != height_)) {
       startFfmpegForDimensions(outPath, w, h, img);
-   } else if (w != width_ || h != height_) {
-      startFfmpegForDimensions(outPath, w, h, img);
+      // Reset arming state (not strictly required, but clean)
+      pendingArmed_ = false;
    }
 
    ensureBuffersForDimensions(w, h);
@@ -115,6 +127,44 @@ public final class MP4StreamProcessor implements Processor {
 
    // Elapsed time (seconds) since segment start
    double dtSec = elapsedSinceT0Seconds(img);
+
+   // If not currently recording, require a second frame soon after the first.
+   // This prevents single Snap images from creating a movie file.
+   if (ff_ == null) {
+      long now = System.nanoTime();
+
+      // If we were armed but it took too long, discard the pending frame.
+      if (pendingArmed_ && (now - pendingArmedAtNanos_) > ARM_TIMEOUT_NANOS) {
+         pendingArmed_ = false;
+         pendingFrame8_ = null;
+      }
+
+      if (!pendingArmed_) {
+         // Arm on first frame: store it, but do NOT create any file yet.
+         pendingArmed_ = true;
+         pendingArmedAtNanos_ = now;
+         pendingW_ = w;
+         pendingH_ = h;
+         pendingDtSec_ = dtSec;
+
+         pendingFrame8_ = new byte[plane8_.length];
+         System.arraycopy(plane8_, 0, pendingFrame8_, 0, plane8_.length);
+         return;
+      }
+
+      // Second frame arrived within timeout -> start recording now.
+      // Use the pending frame as the "first" frame for time-zero init.
+      startFfmpegForDimensions(outPath, pendingW_, pendingH_, img);
+
+      // Write the current frame
+      writeCfrFrameLocked(plane8_, w, h, dtSec);
+
+
+      // Clear pending state and continue; current frame will be written below.
+      pendingArmed_ = false;
+      pendingFrame8_ = null;
+   }
+
 
    // Target output frame index for CFR
    long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
@@ -268,6 +318,49 @@ public final class MP4StreamProcessor implements Processor {
       } catch (Exception ignored) {}
       t0ElapsedMs_ = 0.0;
    }
+
+   private void writeCfrFrameLocked(byte[] frame8, int w, int h, double dtSec) throws IOException {
+      long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
+   
+      synchronized (ffLock_) {
+         if (ff_ == null) {
+            return;
+         }
+   
+         if (lastFrame8_ == null || lastFrame8_.length != frame8.length) {
+            lastFrame8_ = new byte[frame8.length];
+            haveLastFrame_ = false;
+         }
+   
+         if (haveLastFrame_) {
+            while (nextOutFrameIndex_ < targetIndex) {
+               ff_.writeFrame(lastFrame8_);
+               nextOutFrameIndex_++;
+            }
+         } else {
+            nextOutFrameIndex_ = targetIndex;
+         }
+   
+         if (nextOutFrameIndex_ == targetIndex) {
+            // Apply overlay into a working buffer before writing.
+            // If you want to avoid modifying input array, copy first.
+            overlayDeltaT(frame8, w, h, dtSec);
+   
+            ff_.writeFrame(frame8);
+            nextOutFrameIndex_++;
+   
+            System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
+            haveLastFrame_ = true;
+         } else {
+            // Drop but keep as most recent candidate
+            System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
+            haveLastFrame_ = true;
+         }
+      }
+   
+      lastFrameNanos_ = System.nanoTime();
+   }
+   
    
    private double elapsedSinceT0Seconds(Image img) {
       if (!t0IsElapsedMs_) {
@@ -357,6 +450,10 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void stopFfmpeg() {
+      // Reset arming state
+      pendingArmed_ = false;
+      pendingFrame8_ = null;
+
       synchronized (ffLock_) {
          if (ff_ != null) {
             try { ff_.close(); } catch (Exception ignored) {}
