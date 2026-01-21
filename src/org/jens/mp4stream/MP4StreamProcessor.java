@@ -89,6 +89,11 @@ public final class MP4StreamProcessor implements Processor {
    private static final long WD_REFRESH_PERIOD_NANOS = 1_000_000_000L; // 1s
    private static final long EXP_UNAVAILABLE_LOG_PERIOD_NANOS = 5_000_000_000L; // 5s
 
+   // Track display scaling for change detection
+   private DisplayScaling lastScaling_ = null;
+   private volatile long lastScalingLogNanos_ = 0L;
+   private static final long SCALING_LOG_PERIOD_NANOS = 500_000_000L; // 0.5s
+
    private LogManager logs() {
       return (studio_ == null) ? null : studio_.logs();
    }
@@ -150,6 +155,40 @@ public final class MP4StreamProcessor implements Processor {
          this.max = max;
          this.gamma = gamma;
       }
+
+      boolean equals(DisplayScaling other) {
+         if (other == null) {
+            return false;
+         }
+         return this.min == other.min && this.max == other.max && 
+                Math.abs(this.gamma - other.gamma) < 1e-9;
+      }
+   }
+
+   private void logScalingChangeIfNeeded(DisplayScaling newScaling) {
+      if (newScaling == null) {
+         return;
+      }
+
+      // Check if scaling actually changed
+      if (lastScaling_ != null && lastScaling_.equals(newScaling)) {
+         return;
+      }
+
+      // Rate limit logging
+      long now = System.nanoTime();
+      if (lastScalingLogNanos_ != 0L && (now - lastScalingLogNanos_) < SCALING_LOG_PERIOD_NANOS) {
+         return;
+      }
+      lastScalingLogNanos_ = now;
+
+      // Log the change with useful info
+      long range = newScaling.max - newScaling.min;
+      logDebug_(String.format(java.util.Locale.US,
+            "Display scaling changed: min=%d, max=%d, range=%d, gamma=%.3f",
+            newScaling.min, newScaling.max, range, newScaling.gamma));
+
+      lastScaling_ = newScaling;
    }
 
    private DisplayScaling getLiveDisplayScaling(Image img) {
@@ -251,6 +290,7 @@ public final class MP4StreamProcessor implements Processor {
       // Convert incoming pixels to gray8
       if (USE_LIVE_DISPLAY_SCALING) {
          DisplayScaling sc = getLiveDisplayScaling(img);
+         logScalingChangeIfNeeded(sc);
          convertToGray8WithScaling(img, plane8_, sc.min, sc.max, sc.gamma);
       } else {
          convertToGray8(img, plane8_);
@@ -361,6 +401,9 @@ public final class MP4StreamProcessor implements Processor {
       nextOutFrameIndex_ = 0;
       haveLastFrame_ = false;
       lastFrame8_ = null;
+
+      // Reset scaling tracking for new segment (will log on first frame)
+      lastScaling_ = null;
 
       // Recreate overlay resources for this dimension
       disposeOverlay();
