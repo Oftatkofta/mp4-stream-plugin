@@ -92,7 +92,8 @@ public final class MP4StreamProcessor implements Processor {
    // Track display scaling for change detection
    private DisplayScaling lastScaling_ = null;
    private volatile long lastScalingLogNanos_ = 0L;
-   private static final long SCALING_LOG_PERIOD_NANOS = 500_000_000L; // 0.5s
+   private static final long SCALING_LOG_PERIOD_NANOS = 2_000_000_000L; // 2s
+   private static final double SCALING_CHANGE_THRESHOLD_PCT = 5.0; // Only log if range changes by >5%
 
    private LogManager logs() {
       return (studio_ == null) ? null : studio_.logs();
@@ -178,15 +179,43 @@ public final class MP4StreamProcessor implements Processor {
       // Rate limit logging
       long now = System.nanoTime();
       if (lastScalingLogNanos_ != 0L && (now - lastScalingLogNanos_) < SCALING_LOG_PERIOD_NANOS) {
+         // Still update tracking even if not logging
+         lastScaling_ = newScaling;
          return;
       }
+
+      // Check if change is significant enough to log
+      long newRange = newScaling.max - newScaling.min;
+      if (lastScaling_ != null) {
+         long oldRange = lastScaling_.max - lastScaling_.min;
+         
+         if (oldRange > 0) {
+            double changePct = Math.abs((double)(newRange - oldRange) / oldRange * 100.0);
+            if (changePct < SCALING_CHANGE_THRESHOLD_PCT) {
+               // Change is too small, skip logging but update tracking
+               lastScaling_ = newScaling;
+               return;
+            }
+         }
+      }
+
       lastScalingLogNanos_ = now;
 
-      // Log the change with useful info
-      long range = newScaling.max - newScaling.min;
-      logDebug_(String.format(java.util.Locale.US,
-            "Display scaling changed: min=%d, max=%d, range=%d, gamma=%.3f",
-            newScaling.min, newScaling.max, range, newScaling.gamma));
+      // Log the change with useful info including previous values
+      if (lastScaling_ != null) {
+         long oldRange = lastScaling_.max - lastScaling_.min;
+         double changePct = oldRange > 0 ? 
+            ((double)(newRange - oldRange) / oldRange * 100.0) : 0.0;
+         logDebug_(String.format(java.util.Locale.US,
+               "Display scaling changed: min=%d→%d, max=%d→%d, range=%d→%d (%.1f%%), gamma=%.3f",
+               lastScaling_.min, newScaling.min,
+               lastScaling_.max, newScaling.max,
+               oldRange, newRange, changePct, newScaling.gamma));
+      } else {
+         logDebug_(String.format(java.util.Locale.US,
+               "Display scaling: min=%d, max=%d, range=%d, gamma=%.3f",
+               newScaling.min, newScaling.max, newRange, newScaling.gamma));
+      }
 
       lastScaling_ = newScaling;
    }
@@ -263,11 +292,19 @@ public final class MP4StreamProcessor implements Processor {
    private void recordFrameIfConfigured(Image img) throws IOException {
       final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
       if (outPath == null || outPath.trim().isEmpty()) {
+         // Stop recording if output path is cleared
+         if (ff_ != null) {
+            stopFfmpeg();
+         }
          return;
       }
 
       // Only record when Live is running or an acquisition (MDA) is running.
       if (!shouldRecordNow()) {
+         // Stop recording if acquisition/live stopped
+         if (ff_ != null) {
+            stopFfmpeg();
+         }
          return;
       }
 
@@ -452,6 +489,10 @@ public final class MP4StreamProcessor implements Processor {
    private void writeCfrFrameLocked(byte[] frame8, int w, int h, double dtSec) throws IOException {
       long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
 
+      // Update activity marker for watchdog BEFORE write attempt
+      // (so watchdog knows we're processing frames even if write fails)
+      lastFrameNanos_ = System.nanoTime();
+
       synchronized (ffLock_) {
          if (ff_ == null) {
             return;
@@ -486,9 +527,6 @@ public final class MP4StreamProcessor implements Processor {
          System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
          haveLastFrame_ = true;
       }
-
-      // Update activity marker for watchdog AFTER successful write attempt.
-      lastFrameNanos_ = System.nanoTime();
    }
 
    private static String formatElapsedHhMmSsMmm(double dtSec) {
@@ -641,8 +679,10 @@ public final class MP4StreamProcessor implements Processor {
       }
 
       // Close outside lock to avoid blocking producers/watchdog while ffmpeg finalizes.
+      logDebug_("Stopping FFmpeg and finalizing MP4 file...");
       try {
          toClose.close();
+         logInfo_("FFmpeg finalized successfully.");
       } catch (Exception e) {
          logWarn_("FFmpeg close failed (ignored): " + e.getMessage());
       }
