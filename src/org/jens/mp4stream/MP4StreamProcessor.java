@@ -501,23 +501,18 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void stopFfmpeg() {
-      stopFfmpeg("stop requested");
-   }
-   
-   private void stopFfmpeg(String reason) {
       synchronized (ffLock_) {
          if (ff_ != null) {
-            logInfo("Stopping FFmpeg (" + reason + ").");
             try {
                ff_.close();
-            } catch (Exception e) {
-               logError("Error while stopping FFmpeg.", e);
-            } finally {
-               ff_ = null;
+            } catch (Exception ignored) {
             }
+            ff_ = null;
          }
       }
    }
+   
+   
    
 
    private void ensureBuffersForDimensions(int w, int h) {
