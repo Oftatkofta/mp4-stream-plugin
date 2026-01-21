@@ -8,6 +8,7 @@
 /.project
 /.settings/
 .vscode/
+pom.xml
 
 # OS
 .DS_Store
