@@ -7,6 +7,7 @@
   <property name="classes.dir" location="${build.dir}/classes"/>
   <property name="jar.dir" location="${build.dir}/jar"/>
   <property name="jar.file" location="${jar.dir}/${plugin.name}.jar"/>
+  <property name="javac.args" value=""/>
 
   <path id="mm.classpath">
     <fileset dir="${mm.jars.dir}">
@@ -18,30 +19,40 @@
     <delete dir="${build.dir}"/>
   </target>
 
-  <target name="compile">
-    <mkdir dir="${classes.dir}"/>
-    <javac srcdir="${src.dir}"
-           destdir="${classes.dir}"
-           includeantruntime="false"
-           source="1.8" target="1.8" encoding="UTF-8"
-           debug="true">
-      <classpath refid="mm.classpath"/>
-      <!-- Needed for SciJava annotation processing in many setups -->
-      <compilerarg value="-proc:only"/>
-      <compilerarg value="-processorpath"/>
-      <compilerarg pathref="mm.classpath"/>
-    </javac>
+<target name="compile">
+  <mkdir dir="${classes.dir}"/>
 
-    <!-- Re-run compilation normally (produces .class files); annotation pass above ensures discovery metadata -->
-    <javac srcdir="${src.dir}"
-           destdir="${classes.dir}"
-           includeantruntime="false"
-           source="1.8" target="1.8" encoding="UTF-8"
-           debug="true">
-      <classpath refid="mm.classpath"/>
-      <compilerarg value="-proc:none"/>
-    </javac>
-  </target>
+  <javac srcdir="${src.dir}"
+         destdir="${classes.dir}"
+         includeantruntime="false"
+         source="1.8" target="1.8" encoding="UTF-8"
+         debug="true">
+    <classpath refid="mm.classpath"/>
+
+    <!-- Your optional extra compiler flags (e.g. -Xlint:deprecation) -->
+    <compilerarg line="${javac.args}"/>
+
+    <!-- Needed for SciJava annotation processing in many setups -->
+    <compilerarg value="-proc:only"/>
+    <compilerarg value="-processorpath"/>
+    <compilerarg pathref="mm.classpath"/>
+  </javac>
+
+  <!-- Re-run compilation normally (produces .class files); annotation pass above ensures discovery metadata -->
+  <javac srcdir="${src.dir}"
+         destdir="${classes.dir}"
+         includeantruntime="false"
+         source="1.8" target="1.8" encoding="UTF-8"
+         debug="true">
+    <classpath refid="mm.classpath"/>
+
+    <!-- Your optional extra compiler flags (e.g. -Xlint:deprecation) -->
+    <compilerarg line="${javac.args}"/>
+
+    <compilerarg value="-proc:none"/>
+  </javac>
+</target>
+
 
   <target name="jar" depends="compile">
     <mkdir dir="${jar.dir}"/>

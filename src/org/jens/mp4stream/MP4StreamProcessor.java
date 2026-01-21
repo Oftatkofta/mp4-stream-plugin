@@ -363,36 +363,37 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private double computeDeltaTSeconds(Image img) {
-      Metadata md = getMetadata(img);
-      
-      // Prefer acquisition elapsed time
+      final Metadata md = getMetadata(img);
+   
+      // Prefer acquisition elapsed time (use non-deprecated overload)
       if (t0IsElapsedMs_ && md != null && md.hasElapsedTimeMs()) {
          try {
-            Double ms = md.getElapsedTimeMs();
-            if (ms != null) {
-               double dtMs = clampNonNegative(ms.doubleValue() - t0ElapsedMs_);
+            final double ms = md.getElapsedTimeMs(Double.NaN); // non-deprecated
+            if (Double.isFinite(ms)) {
+               final double dtMs = clampNonNegative(ms - t0ElapsedMs_);
                return dtMs / 1000.0;
             }
          } catch (Exception ignored) {}
       }
-
+   
       // Fallback: received time
       if (t0IsReceivedTime_ && md != null) {
          try {
-            String rt = md.getReceivedTime();
+            final String rt = md.getReceivedTime();
             if (rt != null && !rt.trim().isEmpty()) {
-               Instant inst = Instant.parse(rt.trim());
-               long ns = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
-               long dtNs = clampNonNegative(ns - t0ReceivedNs_);
+               final Instant inst = Instant.parse(rt.trim());
+               final long ns = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
+               final long dtNs = clampNonNegative(ns - t0ReceivedNs_);
                return dtNs / 1_000_000_000.0;
             }
          } catch (Exception ignored) {}
       }
-
+   
       // Last fallback: wall clock since segment start
-      long dtNs = clampNonNegative(System.nanoTime() - t0WallNanos_);
+      final long dtNs = clampNonNegative(System.nanoTime() - t0WallNanos_);
       return dtNs / 1_000_000_000.0;
    }
+   
 
    private void startFfmpegForDimensions(String baseOutPath, int w, int h, Image firstImg) throws IOException {
       // Close any existing stream
@@ -460,33 +461,34 @@ public final class MP4StreamProcessor implements Processor {
       t0ElapsedMs_ = 0.0;
       t0ReceivedNs_ = 0L;
       t0WallNanos_ = System.nanoTime();
-
-      Metadata md = getMetadata(img);
+   
+      final Metadata md = getMetadata(img);
       if (md == null) {
          return;
       }
-
-      // Prefer elapsed time (acquisition timeline)
+   
+      // Prefer elapsed time (acquisition timeline). Use non-deprecated overload.
       try {
          if (md.hasElapsedTimeMs()) {
-            Double ms = md.getElapsedTimeMs();
-            if (ms != null) {
-               t0ElapsedMs_ = ms.doubleValue();
+            final double ms = md.getElapsedTimeMs(Double.NaN); // non-deprecated
+            if (Double.isFinite(ms)) {
+               t0ElapsedMs_ = ms;
                t0IsElapsedMs_ = true;
             }
          }
       } catch (Exception ignored) {}
-
+   
       // Also latch received time baseline if present
       try {
-         String rt = md.getReceivedTime();
+         final String rt = md.getReceivedTime();
          if (rt != null && !rt.trim().isEmpty()) {
-            Instant inst = Instant.parse(rt.trim());
+            final Instant inst = Instant.parse(rt.trim());
             t0ReceivedNs_ = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
             t0IsReceivedTime_ = true;
          }
       } catch (Exception ignored) {}
    }
+   
 
    private void writeCfrFrameLocked(byte[] frame8, int w, int h, double dtSec) throws IOException {
       long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
