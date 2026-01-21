@@ -10,31 +10,23 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DecimalFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import java.time.Instant;
 
+import org.micromanager.LogManager;
+import org.micromanager.PropertyMap;
+import org.micromanager.Studio;
 import org.micromanager.data.Image;
+import org.micromanager.data.Metadata;
 import org.micromanager.data.Processor;
 import org.micromanager.data.ProcessorContext;
 import org.micromanager.data.SummaryMetadata;
-import org.micromanager.data.Metadata;
-
-import org.micromanager.Studio;
-import org.micromanager.PropertyMap;
-import org.micromanager.LogManager;
-
-import org.micromanager.display.DisplayWindow;
-import org.micromanager.display.DisplaySettings;
 import org.micromanager.display.ChannelDisplaySettings;
 import org.micromanager.display.ComponentDisplaySettings;
-
-
-
-
-
+import org.micromanager.display.DisplaySettings;
+import org.micromanager.display.DisplayWindow;
 
 public final class MP4StreamProcessor implements Processor {
 
@@ -44,12 +36,10 @@ public final class MP4StreamProcessor implements Processor {
    private final Studio studio_;
    private final PropertyMap settings_;
 
-
    public MP4StreamProcessor(Studio studio, PropertyMap settings) {
       studio_ = studio;
       settings_ = settings;
    }
-   
 
    // Reused per-dimension
    private int width_ = -1;
@@ -59,9 +49,15 @@ public final class MP4StreamProcessor implements Processor {
    private Graphics2D g2d_ = null;
 
    // FFmpeg session state
-   private FfmpegSession ff_ = null;
-   private int segmentIndex_ = 0;
    private final Object ffLock_ = new Object();
+   private volatile FfmpegSession ff_ = null;
+   private int segmentIndex_ = 0;
+
+   // Constant-FPS output
+   private static final double TARGET_FPS = 30.0;
+   private long nextOutFrameIndex_ = 0;
+   private boolean haveLastFrame_ = false;
+   private byte[] lastFrame8_ = null;
 
    // Timing for Δt overlay
    private boolean t0IsElapsedMs_ = false;
@@ -70,108 +66,118 @@ public final class MP4StreamProcessor implements Processor {
    private boolean t0IsReceivedTime_ = false;
    private long t0ReceivedNs_ = 0L;
 
-   private long t0WallNanos_ = 0L; // last fallback
-
-   // watchdog timer
-   private volatile long watchdogTimeoutNanos_ = 1_000_000_000L; // default 1s
-   private volatile long lastFrameNanos_ = 0L;
-   private Thread watchdog_ = null;
-   private volatile boolean watchdogRun_ = false;
-
-   // Constant-FPS output 
-   private static final double TARGET_FPS = 30.0;
-   private long nextOutFrameIndex_ = 0;
-   private boolean haveLastFrame_ = false;
-   private byte[] lastFrame8_ = null;
-   
+   private long t0WallNanos_ = 0L;
 
    private static final boolean USE_LIVE_DISPLAY_SCALING = true;
 
    private static final String LOG_PREFIX = "[MP4Stream] ";
 
+   // Watchdog tuning: timeout = max(WD_MIN_MS, WD_MULT*exposure + WD_MARGIN_MS)
+   private static final double WD_MIN_MS = 1500;     // floor
+   private static final double WD_MARGIN_MS = 1000;  // overhead cushion
+   private static final double WD_MULT = 2.0;        // tolerate up to 2 frame periods
+
+   // Shared across threads
+   private volatile long watchdogTimeoutNanos_ = (long) (WD_MIN_MS * 1e6);
+   private volatile long lastFrameNanos_ = 0L; // updated after each encoded frame
+   private volatile Thread watchdog_ = null;
+   private volatile boolean watchdogRun_ = false;
+
+   // Rate limiting (avoid heavy core calls / log spam)
+   private volatile long lastWdUpdateNanos_ = 0L;
+   private volatile long lastExpUnavailableLogNanos_ = 0L;
+   private static final long WD_REFRESH_PERIOD_NANOS = 1_000_000_000L; // 1s
+   private static final long EXP_UNAVAILABLE_LOG_PERIOD_NANOS = 5_000_000_000L; // 5s
+
    private LogManager logs() {
       return (studio_ == null) ? null : studio_.logs();
    }
-   
-   private void logInfo(String msg) {
+
+   private void logInfo_(String msg) {
       LogManager lm = logs();
       if (lm != null) {
          lm.logMessage(LOG_PREFIX + msg);
       }
    }
-   
-   private void logDebug(String msg) {
+
+   private void logDebug_(String msg) {
       LogManager lm = logs();
       if (lm != null) {
          lm.logDebugMessage(LOG_PREFIX + msg);
       }
    }
+
+   private void logWarn_(String msg) {
+      LogManager lm = logs();
+      if (lm != null) {
+         // No logWarning() in this MM version; keep it as a message with a WARN tag.
+         lm.logMessage(LOG_PREFIX + "WARN: " + msg);
+      }
+   }
    
-   private void logError(String msg, Exception e) {
+
+   private void logError_(String msg, Exception e) {
       LogManager lm = logs();
       if (lm != null) {
          lm.logError(e, LOG_PREFIX + msg);
       }
    }
-   
-
 
    private static final class DisplayScaling {
       final long min;
       final long max;
       final double gamma;
-   
+
       DisplayScaling(long min, long max, double gamma) {
          this.min = min;
          this.max = max;
          this.gamma = gamma;
       }
    }
-   
+
    private DisplayScaling getLiveDisplayScaling(Image img) {
       // Fallback: full dynamic range
       long fallbackMin = 0;
       long fallbackMax = (img.getBytesPerPixel() == 2) ? 65535 : 255;
       double fallbackGamma = 1.0;
-   
+
       if (studio_ == null) {
          return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
       }
-   
+
       try {
          DisplayWindow win = studio_.live().getDisplay();
          if (win == null) {
             return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
          }
-   
+
          DisplaySettings ds = win.getDisplaySettings();
          int ch = 0;
          try {
             ch = img.getCoords().getChannel();
          } catch (Exception ignored) {}
-   
+
          if (ch < 0 || ch >= ds.getNumberOfChannels()) {
             ch = 0;
          }
-   
+
          ChannelDisplaySettings cds = ds.getChannelSettings(ch);
          ComponentDisplaySettings c0 = cds.getComponentSettings(0);
-   
+
          long min = c0.getScalingMinimum();
          long max = c0.getScalingMaximum();
          double gamma = c0.getScalingGamma();
-   
+
          if (max <= min || !(gamma > 0.0)) {
             return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
          }
-   
+
          return new DisplayScaling(min, max, gamma);
-   
+
       } catch (Exception e) {
          return new DisplayScaling(fallbackMin, fallbackMax, fallbackGamma);
       }
    }
-   
 
    @Override
    public SummaryMetadata processSummaryMetadata(SummaryMetadata summary) {
@@ -184,8 +190,7 @@ public final class MP4StreamProcessor implements Processor {
          // Always forward image downstream, regardless of recorder failures.
          recordFrameIfConfigured(img);
       } catch (Exception e) {
-         logError("Processor exception while handling frame.", e);
-
+         logError_("Processor exception while handling frame.", e);
       } finally {
          context.outputImage(img);
       }
@@ -193,42 +198,41 @@ public final class MP4StreamProcessor implements Processor {
 
    @Override
    public void cleanup(ProcessorContext context) {
-      stopFfmpeg();
+      // Stop watchdog first, then close ffmpeg.
       stopWatchdog();
+      stopFfmpeg();
       disposeOverlay();
    }
 
    private void recordFrameIfConfigured(Image img) throws IOException {
-      
       final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
-      
-      updateWatchdogTimeoutFromStudio_();
-
-
       if (outPath == null || outPath.trim().isEmpty()) {
          return;
       }
-   
+
       // Only record when Live is running or an acquisition (MDA) is running.
       if (!shouldRecordNow()) {
          return;
       }
-   
+
       final int w = img.getWidth();
       final int h = img.getHeight();
       if (w <= 0 || h <= 0) {
          return;
       }
-   
+
       // Start if needed, restart on dimension change
       if (ff_ == null) {
          startFfmpegForDimensions(outPath, w, h, img);
       } else if (w != width_ || h != height_) {
          startFfmpegForDimensions(outPath, w, h, img);
+      } else {
+         // Update watchdog timeout occasionally while actively recording (exposure can change mid-live).
+         updateWatchdogFromExposureRateLimited_();
       }
-   
+
       ensureBuffersForDimensions(w, h);
-   
+
       // Convert incoming pixels to gray8
       if (USE_LIVE_DISPLAY_SCALING) {
          DisplayScaling sc = getLiveDisplayScaling(img);
@@ -236,34 +240,33 @@ public final class MP4StreamProcessor implements Processor {
       } else {
          convertToGray8(img, plane8_);
       }
-   
-      // Elapsed time (seconds) since segment start (as defined by initTimeZero)
-      double dtSec = elapsedSinceT0Seconds(img);
-   
-      // Write exactly once using the single CFR path
+
+      // Δt overlay: prefer elapsed time, else received time, else wall clock.
+      double dtSec = computeDeltaTSeconds(img);
+
+      // Write exactly once using CFR path
       writeCfrFrameLocked(plane8_, w, h, dtSec);
    }
-   
+
    private boolean shouldRecordNow() {
       if (studio_ == null) {
          return false;
       }
-   
+
       try {
          if (studio_.live().isLiveModeOn()) {
             return true;
          }
       } catch (Exception ignored) {}
-   
+
       try {
          if (studio_.acquisitions().isAcquisitionRunning()) {
             return true;
          }
       } catch (Exception ignored) {}
-   
+
       return false;
    }
-   
 
    private double computeDeltaTSeconds(Image img) {
       // Prefer acquisition elapsed time
@@ -273,12 +276,14 @@ public final class MP4StreamProcessor implements Processor {
             Double ms = md.getElapsedTimeMs();
             if (ms != null) {
                double dtMs = ms.doubleValue() - t0ElapsedMs_;
-               if (dtMs < 0) dtMs = 0;
+               if (dtMs < 0) {
+                  dtMs = 0;
+               }
                return dtMs / 1000.0;
             }
          }
       } catch (Exception ignored) {}
-   
+
       // Fallback: received time
       try {
          Metadata md = img.getMetadata();
@@ -288,21 +293,23 @@ public final class MP4StreamProcessor implements Processor {
                Instant inst = Instant.parse(rt.trim());
                long ns = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
                long dtNs = ns - t0ReceivedNs_;
-               if (dtNs < 0) dtNs = 0;
+               if (dtNs < 0) {
+                  dtNs = 0;
+               }
                return dtNs / 1_000_000_000.0;
             }
          }
       } catch (Exception ignored) {}
-   
+
       // Last fallback: wall clock since segment start
       long dtNs = System.nanoTime() - t0WallNanos_;
-      if (dtNs < 0) dtNs = 0;
+      if (dtNs < 0) {
+         dtNs = 0;
+      }
       return dtNs / 1_000_000_000.0;
    }
-   
-   
-   private void startFfmpegForDimensions(String baseOutPath, int w, int h, Image firstImg) throws IOException {
 
+   private void startFfmpegForDimensions(String baseOutPath, int w, int h, Image firstImg) throws IOException {
       // Close any existing stream
       stopFfmpeg();
 
@@ -314,10 +321,8 @@ public final class MP4StreamProcessor implements Processor {
       final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
 
       final String ffmpegPath = getSettingString(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
-
-
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
-      
+
       // Build FFmpeg command as cmd-list
       List<String> cmd = new ArrayList<>();
       cmd.add(exe);
@@ -325,7 +330,7 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add("-f"); cmd.add("rawvideo"); // input format
       cmd.add("-pix_fmt"); cmd.add("gray"); // pixel format
       cmd.add("-s"); cmd.add(w + "x" + h); // size
-      
+
       String fps = String.format(java.util.Locale.US, "%.3f", TARGET_FPS);
       cmd.add("-r"); cmd.add(fps); // frame rate
       cmd.add("-i"); cmd.add("-"); // input from stdin
@@ -335,60 +340,79 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add("-c:v"); cmd.add("libx264"); // video codec
       cmd.add("-preset"); cmd.add("veryfast"); // preset
       cmd.add("-crf"); cmd.add("18"); // constant rate factor
-      cmd.add("-pix_fmt"); cmd.add("yuv420p"); // pixel format
+      cmd.add("-pix_fmt"); cmd.add("yuv420p"); // output pixel format
 
       cmd.add(segPath); // output file name
 
-      //FFMPEG command and filename to log
-      logInfo("Starting FFmpeg: " + segPath + " (" + w + "x" + h + " @" + String.format(java.util.Locale.US, "%.3f", TARGET_FPS) + " fps)");
-      logDebug("FFmpeg command: " + cmd.toString());
+      logInfo_("Starting FFmpeg: " + segPath + " (" + w + "x" + h + " @" + fps + " fps)");
+      logDebug_("FFmpeg command: " + cmd);
 
-      ff_ = new FfmpegSession(cmd);
+      synchronized (ffLock_) {
+         ff_ = new FfmpegSession(cmd);
+      }
+
       initTimeZero(firstImg);
       nextOutFrameIndex_ = 0;
       haveLastFrame_ = false;
       lastFrame8_ = null;
 
-
       // Recreate overlay resources for this dimension
       disposeOverlay();
       ensureBuffersForDimensions(w, h);
 
-      // Start watchdog
+      // Arm watchdog baseline and timeout
       lastFrameNanos_ = System.nanoTime();
+      updateWatchdogFromExposureRateLimited_(); // immediate update on start
       startWatchdog();
-
    }
 
    private void initTimeZero(Image img) {
       t0IsElapsedMs_ = false;
+      t0IsReceivedTime_ = false;
+      t0ElapsedMs_ = 0.0;
+      t0ReceivedNs_ = 0L;
+      t0WallNanos_ = System.nanoTime();
+
+      // Prefer elapsed time (acquisition timeline)
       try {
-         org.micromanager.data.Metadata md = img.getMetadata();
+         Metadata md = img.getMetadata();
          if (md != null && md.hasElapsedTimeMs()) {
             Double ms = md.getElapsedTimeMs();
             if (ms != null) {
                t0ElapsedMs_ = ms.doubleValue();
                t0IsElapsedMs_ = true;
-               return;
             }
          }
       } catch (Exception ignored) {}
-      t0ElapsedMs_ = 0.0;
+
+      // Also latch received time baseline if present
+      try {
+         Metadata md = img.getMetadata();
+         if (md != null) {
+            String rt = md.getReceivedTime();
+            if (rt != null && !rt.trim().isEmpty()) {
+               Instant inst = Instant.parse(rt.trim());
+               t0ReceivedNs_ = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
+               t0IsReceivedTime_ = true;
+            }
+         }
+      } catch (Exception ignored) {}
    }
 
    private void writeCfrFrameLocked(byte[] frame8, int w, int h, double dtSec) throws IOException {
       long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
-   
+
       synchronized (ffLock_) {
          if (ff_ == null) {
             return;
          }
-   
+
          if (lastFrame8_ == null || lastFrame8_.length != frame8.length) {
             lastFrame8_ = new byte[frame8.length];
             haveLastFrame_ = false;
          }
-   
+
+         // Fill gaps using last frame (CFR)
          if (haveLastFrame_) {
             while (nextOutFrameIndex_ < targetIndex) {
                ff_.writeFrame(lastFrame8_);
@@ -397,125 +421,158 @@ public final class MP4StreamProcessor implements Processor {
          } else {
             nextOutFrameIndex_ = targetIndex;
          }
-   
+
+         // Write at target index
          if (nextOutFrameIndex_ == targetIndex) {
-            // Apply overlay into a working buffer before writing.
-            // If you want to avoid modifying input array, copy first.
+            // Overlay is drawn in-place into frame8. If you need to preserve the original,
+            // copy into a working buffer first.
             overlayDeltaT(frame8, w, h, dtSec);
-   
+
             ff_.writeFrame(frame8);
             nextOutFrameIndex_++;
-   
+
             System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
             haveLastFrame_ = true;
          } else {
-            // Drop but keep as most recent candidate
+            // Drop (late) but keep as most recent candidate
             System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
             haveLastFrame_ = true;
          }
       }
-   
+
+      // Update activity marker for watchdog AFTER successful write attempt.
       lastFrameNanos_ = System.nanoTime();
    }
-   
-   
-   private double elapsedSinceT0Seconds(Image img) {
-      if (!t0IsElapsedMs_) {
-         return 0.0;
-      }
-      try {
-         org.micromanager.data.Metadata md = img.getMetadata();
-         if (md != null && md.hasElapsedTimeMs()) {
-            Double ms = md.getElapsedTimeMs();
-            if (ms != null) {
-               double dt = ms.doubleValue() - t0ElapsedMs_;
-               if (dt < 0) dt = 0;
-               return dt / 1000.0;
-            }
-         }
-      } catch (Exception ignored) {}
-      return 0.0;
-   }
-   
 
    private static String formatElapsedHhMmSsMmm(double dtSec) {
       if (dtSec < 0) {
          dtSec = 0;
       }
       long totalMs = (long) Math.round(dtSec * 1000.0);
-   
+
       long ms = totalMs % 1000;
       long totalSec = totalMs / 1000;
-   
+
       long sec = totalSec % 60;
       long totalMin = totalSec / 60;
-   
+
       long min = totalMin % 60;
       long hours = totalMin / 60;
-   
+
       return String.format(java.util.Locale.US, "%02d:%02d:%02d.%03d", hours, min, sec, ms);
    }
 
    private double getCurrentExposureMs_() {
       try {
-         if (studio_ != null) {
-            return studio_.core().getExposure();
-         }
-      } catch (Exception ignored) {
-      }
-      return -1.0;
-   }
-   
-   private void updateWatchdogTimeoutFromStudio_() {
-      double expMs = getCurrentExposureMs_();
-      if (expMs > 0) {
-         long expNanos = (long) (expMs * 1_000_000.0);
-         // Exposure + margin (camera + MM overhead)
-         watchdogTimeoutNanos_ = Math.max(1_000_000_000L, 3L * expNanos);
+         return (studio_ == null) ? Double.NaN : studio_.core().getExposure();
+      } catch (Exception e) {
+         // Do not spam here; caller rate-limits.
+         return Double.NaN;
       }
    }
-   
 
-   private void startWatchdog() {
-      if (watchdog_ != null) {
+   private void updateWatchdogFromExposureRateLimited_() {
+      final long now = System.nanoTime();
+      final long last = lastWdUpdateNanos_;
+      if (last != 0L && (now - last) < WD_REFRESH_PERIOD_NANOS) {
          return;
       }
+      lastWdUpdateNanos_ = now;
+      updateWatchdogFromExposure_();
+   }
+
+   /**
+    * Updates watchdogTimeoutNanos_ from current core exposure.
+    * Requirement: every *change* to watchdog timeout is logged in DEBUG.
+    */
+   private void updateWatchdogFromExposure_() {
+      double expMs = getCurrentExposureMs_();
+      if (!Double.isFinite(expMs) || expMs <= 0) {
+         // Rate-limit exposure-unavailable logs
+         long now = System.nanoTime();
+         if (lastExpUnavailableLogNanos_ == 0L || (now - lastExpUnavailableLogNanos_) > EXP_UNAVAILABLE_LOG_PERIOD_NANOS) {
+            lastExpUnavailableLogNanos_ = now;
+            logDebug_("Exposure unavailable; watchdog unchanged.");
+         }
+         return;
+      }
+
+      double wdMs = Math.max(WD_MIN_MS, WD_MULT * expMs + WD_MARGIN_MS);
+      long wdNs = (long) (wdMs * 1e6);
+
+      if (wdNs != watchdogTimeoutNanos_) {
+         logDebug_(String.format(java.util.Locale.US,
+               "Watchdog timeout updated: %.0f ms (exposure %.0f ms, mult %.1f, margin %.0f ms)",
+               wdMs, expMs, WD_MULT, WD_MARGIN_MS));
+         watchdogTimeoutNanos_ = wdNs;
+      }
+   }
+
+   private void startWatchdog() {
+      if (watchdog_ != null && watchdog_.isAlive()) {
+         return;
+      }
+
       watchdogRun_ = true;
+
       watchdog_ = new Thread(() -> {
-         final long timeoutNanos = 1_000_000_000L; // 1 second
-         while (watchdogRun_) {
-            try {
-               Thread.sleep(200);
-            } catch (InterruptedException ie) {
-               Thread.currentThread().interrupt();
-               return;
-            }
-            if (ff_ != null) {
-               long idle = System.nanoTime() - lastFrameNanos_;
-               if (idle > timeoutNanos) {
-                  stopFfmpeg(); // closes stdin => MP4 finalized
+         try {
+            while (watchdogRun_) {
+               try {
+                  Thread.sleep(200);
+               } catch (InterruptedException ie) {
+                  Thread.currentThread().interrupt();
+                  return;
+               }
+
+               // Only act if recording is active
+               if (ff_ == null) {
+                  continue;
+               }
+
+               final long last = lastFrameNanos_;
+               if (last == 0L) {
+                  continue; // not armed
+               }
+
+               final long idleNanos = System.nanoTime() - last;
+
+               // Read current timeout (updated elsewhere)
+               final long timeoutNanos = watchdogTimeoutNanos_;
+
+               if (idleNanos > timeoutNanos) {
+                  // stopFfmpeg() is idempotent.
+                  stopFfmpeg();
+                  // Disarm to prevent repeated stop attempts before ff_ becomes visible as null everywhere.
+                  lastFrameNanos_ = 0L;
                }
             }
+         } finally {
+            // Allow restart
+            watchdog_ = null;
          }
       }, "mp4stream-watchdog");
+
       watchdog_.setDaemon(true);
       watchdog_.start();
    }
-   
+
    private void stopWatchdog() {
       watchdogRun_ = false;
-      if (watchdog_ != null) {
-         watchdog_.interrupt();
+      Thread t = watchdog_;
+      if (t != null) {
+         t.interrupt();
       }
       watchdog_ = null;
    }
-   
-   
+
    private static String makeSegmentPath(String baseOutPath, int w, int h, int idx) {
       File f = new File(baseOutPath);
       String name = f.getName();
       String parent = f.getParent();
-      if (parent == null) parent = ".";
+      if (parent == null) {
+         parent = ".";
+      }
 
       String stem = name;
       if (stem.toLowerCase().endsWith(".mp4")) {
@@ -526,19 +583,23 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void stopFfmpeg() {
+      FfmpegSession toClose = null;
+
       synchronized (ffLock_) {
-         if (ff_ != null) {
-            try {
-               ff_.close();
-            } catch (Exception ignored) {
-            }
-            ff_ = null;
+         if (ff_ == null) {
+            return;
          }
+         toClose = ff_;
+         ff_ = null;
+      }
+
+      // Close outside lock to avoid blocking producers/watchdog while ffmpeg finalizes.
+      try {
+         toClose.close();
+      } catch (Exception e) {
+         logWarn_("FFmpeg close failed (ignored): " + e.getMessage());
       }
    }
-   
-   
-   
 
    private void ensureBuffersForDimensions(int w, int h) {
       int n = w * h;
@@ -547,13 +608,8 @@ public final class MP4StreamProcessor implements Processor {
       }
 
       if (grayImg_ == null || grayImg_.getWidth() != w || grayImg_.getHeight() != h) {
-         // Build BufferedImage backed by plane8_
          grayImg_ = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
-         byte[] backing = ((DataBufferByte) grayImg_.getRaster().getDataBuffer()).getData();
 
-         // We will copy plane8_ into backing each frame before drawing (cheap),
-         // then copy backing back into plane8_ (also cheap). This avoids fragile raster aliasing.
-         // Alternative (alias same array) is possible but more error-prone.
          g2d_ = grayImg_.createGraphics();
          g2d_.setFont(new Font("SansSerif", Font.BOLD, 18));
          g2d_.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -563,7 +619,9 @@ public final class MP4StreamProcessor implements Processor {
 
    private void disposeOverlay() {
       if (g2d_ != null) {
-         try { g2d_.dispose(); } catch (Exception ignored) {}
+         try {
+            g2d_.dispose();
+         } catch (Exception ignored) {}
       }
       g2d_ = null;
       grayImg_ = null;
@@ -595,65 +653,59 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private static void convertToGray8WithScaling(Image img, byte[] out8, long min, long max, double gamma) {
+      final int bpp = img.getBytesPerPixel();
+      final Object raw = img.getRawPixelsCopy();
 
-   final int bpp = img.getBytesPerPixel();
-   final Object raw = img.getRawPixelsCopy();
-
-   if (max <= min) {
-      // avoid divide-by-zero; fall back to simple mapping
-      convertToGray8(img, out8);
-      return;
-   }
-   if (!(gamma > 0.0)) {
-      gamma = 1.0;
-   }
-   
-   final double invRange = 1.0 / (double) (max - min);
-   // Micro-Manager display gamma behaves like: out = in^gamma
-   final double gammaExp = gamma;
-   
-   if (bpp == 1) {
-      byte[] in = (byte[]) raw;
-      int n = Math.min(in.length, out8.length);
-      for (int i = 0; i < n; i++) {
-         int v = in[i] & 0xFF;
-         double x = (v - (double) min) * invRange;
-         if (x < 0) x = 0;
-         if (x > 1) x = 1;
-         if (gamma != 1.0) {
-            x = Math.pow(x, gammaExp);
-         }
-         out8[i] = (byte) (int) Math.round(255.0 * x);
+      if (max <= min) {
+         convertToGray8(img, out8);
+         return;
       }
-      return;
-   }
-
-   if (bpp == 2) {
-      short[] in16 = (short[]) raw;
-      int n = Math.min(in16.length, out8.length);
-      for (int i = 0; i < n; i++) {
-         int v = in16[i] & 0xFFFF; // unsigned
-         double x = (v - (double) min) * invRange;
-         if (x < 0) x = 0;
-         if (x > 1) x = 1;
-         if (gamma != 1.0) {
-            x = Math.pow(x, gammaExp);
-         }
-         out8[i] = (byte) (int) Math.round(255.0 * x);
+      if (!(gamma > 0.0)) {
+         gamma = 1.0;
       }
-      return;
-   }
 
-   // Unsupported; black
-   for (int i = 0; i < out8.length; i++) {
-      out8[i] = 0;
-   }
-}
+      final double invRange = 1.0 / (double) (max - min);
+      final double gammaExp = gamma;
 
+      if (bpp == 1) {
+         byte[] in = (byte[]) raw;
+         int n = Math.min(in.length, out8.length);
+         for (int i = 0; i < n; i++) {
+            int v = in[i] & 0xFF;
+            double x = (v - (double) min) * invRange;
+            if (x < 0) x = 0;
+            if (x > 1) x = 1;
+            if (gamma != 1.0) {
+               x = Math.pow(x, gammaExp);
+            }
+            out8[i] = (byte) (int) Math.round(255.0 * x);
+         }
+         return;
+      }
+
+      if (bpp == 2) {
+         short[] in16 = (short[]) raw;
+         int n = Math.min(in16.length, out8.length);
+         for (int i = 0; i < n; i++) {
+            int v = in16[i] & 0xFFFF; // unsigned
+            double x = (v - (double) min) * invRange;
+            if (x < 0) x = 0;
+            if (x > 1) x = 1;
+            if (gamma != 1.0) {
+               x = Math.pow(x, gammaExp);
+            }
+            out8[i] = (byte) (int) Math.round(255.0 * x);
+         }
+         return;
+      }
+
+      // Unsupported; black
+      for (int i = 0; i < out8.length; i++) {
+         out8[i] = 0;
+      }
+   }
 
    private void overlayDeltaT(byte[] plane8, int w, int h, double dtSec) {
-
-
       if (grayImg_ == null || g2d_ == null) {
          return;
       }
@@ -664,7 +716,7 @@ public final class MP4StreamProcessor implements Processor {
 
       String text = "\u0394t " + formatElapsedHhMmSsMmm(dtSec);
 
-      // Draw a simple high-contrast label: black shadow then white text
+      // High-contrast label: black shadow then white text
       g2d_.setFont(new Font("Monospaced", Font.BOLD, 18));
       g2d_.setColor(java.awt.Color.BLACK);
       g2d_.drawString(text, 11, 23);
@@ -683,8 +735,8 @@ public final class MP4StreamProcessor implements Processor {
                return v;
             }
          }
-      } catch (Exception ignored) {
-      }
+      } catch (Exception ignored) {}
+
       // Fallback to Preferences (keeps behavior working even if settings_ is null)
       try {
          return PREFS.get(key, defaultValue);
@@ -692,9 +744,12 @@ public final class MP4StreamProcessor implements Processor {
          return defaultValue;
       }
    }
-   
 
-   // Minimal FFmpeg wrapper that drains stderr to avoid deadlocks.
+   /**
+    * Minimal FFmpeg wrapper that drains stderr to avoid deadlocks.
+    * Note: this intentionally discards stderr output. If you want it logged, add
+    * a ring buffer or log lines at DEBUG (but be careful about volume).
+    */
    private static final class FfmpegSession implements AutoCloseable {
       private final Process proc_;
       private final OutputStream stdin_;
@@ -738,11 +793,13 @@ public final class MP4StreamProcessor implements Processor {
          byte[] buf = new byte[8192];
          try {
             while (in.read(buf) >= 0) {
-               // discard; you can log later if desired
+               // discard
             }
          } catch (IOException ignored) {
          } finally {
-            try { in.close(); } catch (Exception ignored2) {}
+            try {
+               in.close();
+            } catch (Exception ignored2) {}
          }
       }
    }
