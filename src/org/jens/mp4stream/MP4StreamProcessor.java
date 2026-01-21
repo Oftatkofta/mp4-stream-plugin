@@ -28,6 +28,8 @@ import org.micromanager.display.ComponentDisplaySettings;
 import org.micromanager.display.DisplaySettings;
 import org.micromanager.display.DisplayWindow;
 
+// Note: Processor API is deprecated in MM 2.0 but remains the required
+// extension point for image processors. This is expected, but gives a compiler warning
 public final class MP4StreamProcessor implements Processor {
 
    private static final Preferences PREFS =
