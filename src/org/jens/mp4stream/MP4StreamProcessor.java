@@ -73,6 +73,7 @@ public final class MP4StreamProcessor implements Processor {
    private long t0WallNanos_ = 0L; // last fallback
 
    // watchdog timer
+   private volatile long watchdogTimeoutNanos_ = 1_000_000_000L; // default 1s
    private volatile long lastFrameNanos_ = 0L;
    private Thread watchdog_ = null;
    private volatile boolean watchdogRun_ = false;
@@ -198,7 +199,12 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void recordFrameIfConfigured(Image img) throws IOException {
+      
       final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+      
+      updateWatchdogTimeoutFromStudio_();
+
+
       if (outPath == null || outPath.trim().isEmpty()) {
          return;
       }
@@ -450,6 +456,25 @@ public final class MP4StreamProcessor implements Processor {
       return String.format(java.util.Locale.US, "%02d:%02d:%02d.%03d", hours, min, sec, ms);
    }
 
+   private double getCurrentExposureMs_() {
+      try {
+         if (studio_ != null) {
+            return studio_.core().getExposure();
+         }
+      } catch (Exception ignored) {
+      }
+      return -1.0;
+   }
+   
+   private void updateWatchdogTimeoutFromStudio_() {
+      double expMs = getCurrentExposureMs_();
+      if (expMs > 0) {
+         long expNanos = (long) (expMs * 1_000_000.0);
+         // Exposure + margin (camera + MM overhead)
+         watchdogTimeoutNanos_ = Math.max(1_000_000_000L, 3L * expNanos);
+      }
+   }
+   
 
    private void startWatchdog() {
       if (watchdog_ != null) {
