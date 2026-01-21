@@ -23,12 +23,15 @@ import org.micromanager.data.SummaryMetadata;
 import org.micromanager.data.Metadata;
 
 import org.micromanager.Studio;
+import org.micromanager.PropertyMap;
+import org.micromanager.LogManager;
+
 import org.micromanager.display.DisplayWindow;
 import org.micromanager.display.DisplaySettings;
 import org.micromanager.display.ChannelDisplaySettings;
 import org.micromanager.display.ComponentDisplaySettings;
 
-import org.micromanager.PropertyMap;
+
 
 
 
@@ -82,6 +85,34 @@ public final class MP4StreamProcessor implements Processor {
    
 
    private static final boolean USE_LIVE_DISPLAY_SCALING = true;
+
+   private static final String LOG_PREFIX = "[MP4Stream] ";
+
+   private LogManager logs() {
+      return (studio_ == null) ? null : studio_.logs();
+   }
+   
+   private void logInfo(String msg) {
+      LogManager lm = logs();
+      if (lm != null) {
+         lm.logMessage(LOG_PREFIX + msg);
+      }
+   }
+   
+   private void logDebug(String msg) {
+      LogManager lm = logs();
+      if (lm != null) {
+         lm.logDebugMessage(LOG_PREFIX + msg);
+      }
+   }
+   
+   private void logError(String msg, Exception e) {
+      LogManager lm = logs();
+      if (lm != null) {
+         lm.logError(e, LOG_PREFIX + msg);
+      }
+   }
+   
 
 
    private static final class DisplayScaling {
@@ -152,7 +183,7 @@ public final class MP4StreamProcessor implements Processor {
          // Always forward image downstream, regardless of recorder failures.
          recordFrameIfConfigured(img);
       } catch (Exception e) {
-         e.printStackTrace();
+         logError("Processor exception while handling frame.", e);
 
       } finally {
          context.outputImage(img);
@@ -301,6 +332,10 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add("-pix_fmt"); cmd.add("yuv420p"); // pixel format
 
       cmd.add(segPath); // output file name
+
+      //FFMPEG command and filename to log
+      logInfo("Starting FFmpeg: " + segPath + " (" + w + "x" + h + " @" + String.format(java.util.Locale.US, "%.3f", TARGET_FPS) + " fps)");
+      logDebug("FFmpeg command: " + cmd.toString());
 
       ff_ = new FfmpegSession(cmd);
       initTimeZero(firstImg);
@@ -466,14 +501,24 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void stopFfmpeg() {
-
+      stopFfmpeg("stop requested");
+   }
+   
+   private void stopFfmpeg(String reason) {
       synchronized (ffLock_) {
          if (ff_ != null) {
-            try { ff_.close(); } catch (Exception ignored) {}
-            ff_ = null;
+            logInfo("Stopping FFmpeg (" + reason + ").");
+            try {
+               ff_.close();
+            } catch (Exception e) {
+               logError("Error while stopping FFmpeg.", e);
+            } finally {
+               ff_ = null;
+            }
          }
       }
    }
+   
 
    private void ensureBuffersForDimensions(int w, int h) {
       int n = w * h;
