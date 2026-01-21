@@ -114,13 +114,30 @@ public final class MP4StreamProcessor implements Processor {
          lm.logMessage(LOG_PREFIX + "WARN: " + msg);
       }
    }
-   
 
    private void logError_(String msg, Exception e) {
       LogManager lm = logs();
       if (lm != null) {
          lm.logError(e, LOG_PREFIX + msg);
       }
+   }
+
+   // Helper to safely get metadata from image
+   private static Metadata getMetadata(Image img) {
+      try {
+         return img.getMetadata();
+      } catch (Exception ignored) {
+         return null;
+      }
+   }
+
+   // Helper to clamp negative values to zero
+   private static double clampNonNegative(double value) {
+      return (value < 0) ? 0 : value;
+   }
+
+   private static long clampNonNegative(long value) {
+      return (value < 0) ? 0 : value;
    }
 
    private static final class DisplayScaling {
@@ -222,9 +239,7 @@ public final class MP4StreamProcessor implements Processor {
       }
 
       // Start if needed, restart on dimension change
-      if (ff_ == null) {
-         startFfmpegForDimensions(outPath, w, h, img);
-      } else if (w != width_ || h != height_) {
+      if (ff_ == null || w != width_ || h != height_) {
          startFfmpegForDimensions(outPath, w, h, img);
       } else {
          // Update watchdog timeout occasionally while actively recording (exposure can change mid-live).
@@ -269,43 +284,34 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private double computeDeltaTSeconds(Image img) {
+      Metadata md = getMetadata(img);
+      
       // Prefer acquisition elapsed time
-      try {
-         Metadata md = img.getMetadata();
-         if (t0IsElapsedMs_ && md != null && md.hasElapsedTimeMs()) {
+      if (t0IsElapsedMs_ && md != null && md.hasElapsedTimeMs()) {
+         try {
             Double ms = md.getElapsedTimeMs();
             if (ms != null) {
-               double dtMs = ms.doubleValue() - t0ElapsedMs_;
-               if (dtMs < 0) {
-                  dtMs = 0;
-               }
+               double dtMs = clampNonNegative(ms.doubleValue() - t0ElapsedMs_);
                return dtMs / 1000.0;
             }
-         }
-      } catch (Exception ignored) {}
+         } catch (Exception ignored) {}
+      }
 
       // Fallback: received time
-      try {
-         Metadata md = img.getMetadata();
-         if (t0IsReceivedTime_ && md != null) {
+      if (t0IsReceivedTime_ && md != null) {
+         try {
             String rt = md.getReceivedTime();
             if (rt != null && !rt.trim().isEmpty()) {
                Instant inst = Instant.parse(rt.trim());
                long ns = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
-               long dtNs = ns - t0ReceivedNs_;
-               if (dtNs < 0) {
-                  dtNs = 0;
-               }
+               long dtNs = clampNonNegative(ns - t0ReceivedNs_);
                return dtNs / 1_000_000_000.0;
             }
-         }
-      } catch (Exception ignored) {}
+         } catch (Exception ignored) {}
+      }
 
       // Last fallback: wall clock since segment start
-      long dtNs = System.nanoTime() - t0WallNanos_;
-      if (dtNs < 0) {
-         dtNs = 0;
-      }
+      long dtNs = clampNonNegative(System.nanoTime() - t0WallNanos_);
       return dtNs / 1_000_000_000.0;
    }
 
@@ -373,10 +379,14 @@ public final class MP4StreamProcessor implements Processor {
       t0ReceivedNs_ = 0L;
       t0WallNanos_ = System.nanoTime();
 
+      Metadata md = getMetadata(img);
+      if (md == null) {
+         return;
+      }
+
       // Prefer elapsed time (acquisition timeline)
       try {
-         Metadata md = img.getMetadata();
-         if (md != null && md.hasElapsedTimeMs()) {
+         if (md.hasElapsedTimeMs()) {
             Double ms = md.getElapsedTimeMs();
             if (ms != null) {
                t0ElapsedMs_ = ms.doubleValue();
@@ -387,14 +397,11 @@ public final class MP4StreamProcessor implements Processor {
 
       // Also latch received time baseline if present
       try {
-         Metadata md = img.getMetadata();
-         if (md != null) {
-            String rt = md.getReceivedTime();
-            if (rt != null && !rt.trim().isEmpty()) {
-               Instant inst = Instant.parse(rt.trim());
-               t0ReceivedNs_ = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
-               t0IsReceivedTime_ = true;
-            }
+         String rt = md.getReceivedTime();
+         if (rt != null && !rt.trim().isEmpty()) {
+            Instant inst = Instant.parse(rt.trim());
+            t0ReceivedNs_ = inst.getEpochSecond() * 1_000_000_000L + inst.getNano();
+            t0IsReceivedTime_ = true;
          }
       } catch (Exception ignored) {}
    }
@@ -430,14 +437,11 @@ public final class MP4StreamProcessor implements Processor {
 
             ff_.writeFrame(frame8);
             nextOutFrameIndex_++;
-
-            System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
-            haveLastFrame_ = true;
-         } else {
-            // Drop (late) but keep as most recent candidate
-            System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
-            haveLastFrame_ = true;
          }
+         
+         // Always update last frame (whether written or dropped)
+         System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
+         haveLastFrame_ = true;
       }
 
       // Update activity marker for watchdog AFTER successful write attempt.
@@ -665,18 +669,16 @@ public final class MP4StreamProcessor implements Processor {
       }
 
       final double invRange = 1.0 / (double) (max - min);
-      final double gammaExp = gamma;
+      final boolean useGamma = (gamma != 1.0);
 
       if (bpp == 1) {
          byte[] in = (byte[]) raw;
          int n = Math.min(in.length, out8.length);
          for (int i = 0; i < n; i++) {
             int v = in[i] & 0xFF;
-            double x = (v - (double) min) * invRange;
-            if (x < 0) x = 0;
-            if (x > 1) x = 1;
-            if (gamma != 1.0) {
-               x = Math.pow(x, gammaExp);
+            double x = Math.max(0.0, Math.min(1.0, (v - (double) min) * invRange));
+            if (useGamma) {
+               x = Math.pow(x, gamma);
             }
             out8[i] = (byte) (int) Math.round(255.0 * x);
          }
@@ -688,11 +690,9 @@ public final class MP4StreamProcessor implements Processor {
          int n = Math.min(in16.length, out8.length);
          for (int i = 0; i < n; i++) {
             int v = in16[i] & 0xFFFF; // unsigned
-            double x = (v - (double) min) * invRange;
-            if (x < 0) x = 0;
-            if (x > 1) x = 1;
-            if (gamma != 1.0) {
-               x = Math.pow(x, gammaExp);
+            double x = Math.max(0.0, Math.min(1.0, (v - (double) min) * invRange));
+            if (useGamma) {
+               x = Math.pow(x, gamma);
             }
             out8[i] = (byte) (int) Math.round(255.0 * x);
          }
