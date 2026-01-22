@@ -11,7 +11,10 @@
   - **Time-lapse compression** — Compresses playback time (e.g., 10x = plays 10× faster)
 - **Automatic segment numbering** — Prevents file overwrites, auto-increments filenames
 - **Live display scaling** — Uses Micro-Manager's current brightness/contrast settings
-- **Δt overlay** — Shows elapsed time (HH:MM:SS.mmm) in top-left corner
+- **Customizable overlays:**
+  - **Δt timestamp** — Shows elapsed time (HH:MM:SS.mmm) in top-left corner
+  - **Scale bar** — Automatic scale bar in bottom-right (uses pixel size from MM config)
+  - **Text color** — White or black text with optional contrasting background
 - **Immediate finalization** — MP4 closes properly when Live/MDA stops (event-driven)
 - **Watchdog timeout** — Finalizes recording if no frames arrive (prevents hung sessions)
 
@@ -39,6 +42,8 @@
 
 Click the gear icon (⚙) next to the plugin to open settings:
 
+### General Settings
+
 | Setting | Description |
 |---------|-------------|
 | **Output file** | Base path for MP4 output (actual files get `_WxH_segNNN.mp4` suffix) |
@@ -46,6 +51,17 @@ Click the gear icon (⚙) next to the plugin to open settings:
 | **Recording Mode** | See Recording Modes below |
 | **FPS** | Target output framerate (for Constant FPS mode) |
 | **Time-lapse factor** | Playback speedup multiplier (for Time-lapse mode) |
+
+### Overlay Settings
+
+| Setting | Description |
+|---------|-------------|
+| **Show timestamp (Δt)** | Enable/disable elapsed time overlay in top-left corner |
+| **Text color** | White or Black text color |
+| **Contrasting background** | Adds semi-transparent background box behind text for readability |
+| **Show scale bar** | Draws a scale bar in bottom-right corner (requires pixel size to be configured in MM) |
+
+The scale bar automatically calculates an appropriate length based on image pixel size and displays it in µm or mm.
 
 ### Recording Modes
 
@@ -170,6 +186,25 @@ Example: `experiment_2304x2304_seg001.mp4`
    - [ ] File size grows linearly
    - [ ] Final file is playable
    - [ ] No dropped frames in log
+
+### Test 11: Overlay Customization
+1. Enable timestamp with white text and background
+2. Record for 5 seconds
+3. Change to black text, no background
+4. Record for 5 seconds
+5. **Verify:**
+   - [ ] First video has white text with semi-transparent background
+   - [ ] Second video has black text without background
+   - [ ] Timestamp is readable in both cases
+
+### Test 12: Scale Bar
+1. Configure pixel size in Micro-Manager (Devices → Pixel Size Calibration)
+2. Enable scale bar in plugin settings
+3. Record for 5 seconds
+4. **Verify:**
+   - [ ] Scale bar appears in bottom-right corner
+   - [ ] Label shows correct units (µm or mm)
+   - [ ] Scale bar length is reasonable (~15% of image width)
 
 ## Troubleshooting
 
