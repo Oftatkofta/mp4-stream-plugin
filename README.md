@@ -58,10 +58,12 @@ Click the gear icon (⚙) next to the plugin to open settings:
 |---------|-------------|
 | **Show timestamp (Δt)** | Enable/disable elapsed time overlay in top-left corner |
 | **Text color** | White or Black text color |
+| **Font size** | Overlay text size in pixels (8-72, default 18) |
 | **Contrasting background** | Adds semi-transparent background box behind text for readability |
 | **Show scale bar** | Draws a scale bar in bottom-right corner (requires pixel size to be configured in MM) |
+| **Scale bar length** | Fixed length in µm, or 0 for auto (~15% of image width) |
 
-The scale bar automatically calculates an appropriate length based on image pixel size and displays it in µm or mm.
+The scale bar displays in µm or mm depending on length.
 
 ### Recording Modes
 

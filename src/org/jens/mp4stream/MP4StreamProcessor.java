@@ -68,6 +68,8 @@ public final class MP4StreamProcessor implements Processor {
    private String timestampColor_ = MP4StreamConfigurator.DEFAULT_TIMESTAMP_COLOR;
    private boolean timestampBackground_ = MP4StreamConfigurator.DEFAULT_TIMESTAMP_BACKGROUND;
    private boolean scalebarEnabled_ = MP4StreamConfigurator.DEFAULT_SCALEBAR_ENABLED;
+   private int fontSize_ = MP4StreamConfigurator.DEFAULT_FONT_SIZE;
+   private double scalebarLengthUm_ = MP4StreamConfigurator.DEFAULT_SCALEBAR_LENGTH_UM;
    private double pixelSizeUm_ = 0.0; // Loaded from image metadata
 
    // CFR (Constant Frame Rate) output state
@@ -482,13 +484,18 @@ public final class MP4StreamProcessor implements Processor {
             MP4StreamConfigurator.DEFAULT_TIMESTAMP_BACKGROUND);
       scalebarEnabled_ = PREFS.getBoolean(MP4StreamConfigurator.KEY_SCALEBAR_ENABLED,
             MP4StreamConfigurator.DEFAULT_SCALEBAR_ENABLED);
+      fontSize_ = PREFS.getInt(MP4StreamConfigurator.KEY_FONT_SIZE,
+            MP4StreamConfigurator.DEFAULT_FONT_SIZE);
+      scalebarLengthUm_ = PREFS.getDouble(MP4StreamConfigurator.KEY_SCALEBAR_LENGTH_UM,
+            MP4StreamConfigurator.DEFAULT_SCALEBAR_LENGTH_UM);
 
       // Try to get pixel size from core
       pixelSizeUm_ = getPixelSizeUm();
 
       // Log overlay settings at debug level
-      logDebug_(String.format("Overlay settings: timestamp=%s (color=%s, bg=%s), scalebar=%s (pixelSize=%.4f µm)",
-            timestampEnabled_, timestampColor_, timestampBackground_, scalebarEnabled_, pixelSizeUm_));
+      logDebug_(String.format("Overlay settings: timestamp=%s (color=%s, bg=%s, font=%dpx), scalebar=%s (length=%.0fµm, pixelSize=%.4f µm)",
+            timestampEnabled_, timestampColor_, timestampBackground_, fontSize_,
+            scalebarEnabled_, scalebarLengthUm_, pixelSizeUm_));
 
       if (scalebarEnabled_ && pixelSizeUm_ <= 0) {
          logWarn_("Scale bar enabled but pixel size not configured in Micro-Manager. Scale bar will not be drawn.");
@@ -862,7 +869,7 @@ public final class MP4StreamProcessor implements Processor {
          grayImg_ = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
 
          g2d_ = grayImg_.createGraphics();
-         g2d_.setFont(new Font("SansSerif", Font.BOLD, 18));
+         g2d_.setFont(new Font("SansSerif", Font.BOLD, fontSize_));
          g2d_.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
          g2d_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       }
@@ -977,7 +984,7 @@ public final class MP4StreamProcessor implements Processor {
       // Draw timestamp overlay (top-left)
       if (timestampEnabled_) {
          String text = "\u0394t " + formatElapsedHhMmSsMmm(dtSec);
-         g2d_.setFont(new Font("Monospaced", Font.BOLD, 18));
+         g2d_.setFont(new Font("Monospaced", Font.BOLD, fontSize_));
          
          java.awt.FontMetrics fm = g2d_.getFontMetrics();
          int textWidth = fm.stringWidth(text);
@@ -1007,18 +1014,23 @@ public final class MP4StreamProcessor implements Processor {
 
    private void drawScaleBar(int w, int h, java.awt.Color textColor, 
          java.awt.Color shadowColor, java.awt.Color bgColor) {
-      // Calculate a nice scale bar length (target ~10-20% of image width)
-      double imageWidthUm = w * pixelSizeUm_;
-      
-      // Find a nice round number for the scale bar
-      double targetUm = imageWidthUm * 0.15; // 15% of image width
-      double[] niceValues = {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
-      double scaleUm = niceValues[0];
-      for (double v : niceValues) {
-         if (v <= targetUm) {
-            scaleUm = v;
-         } else {
-            break;
+      double scaleUm;
+
+      if (scalebarLengthUm_ > 0) {
+         // Use user-specified length
+         scaleUm = scalebarLengthUm_;
+      } else {
+         // Auto-calculate: find a nice round number (~15% of image width)
+         double imageWidthUm = w * pixelSizeUm_;
+         double targetUm = imageWidthUm * 0.15;
+         double[] niceValues = {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
+         scaleUm = niceValues[0];
+         for (double v : niceValues) {
+            if (v <= targetUm) {
+               scaleUm = v;
+            } else {
+               break;
+            }
          }
       }
 
@@ -1028,7 +1040,7 @@ public final class MP4StreamProcessor implements Processor {
 
       // Position: bottom-right with margin
       int margin = 15;
-      int barHeight = 6;
+      int barHeight = Math.max(4, fontSize_ / 3); // Scale bar height proportional to font
       int barX = w - margin - barLengthPx;
       int barY = h - margin - barHeight;
 
@@ -1037,7 +1049,9 @@ public final class MP4StreamProcessor implements Processor {
             String.format(java.util.Locale.US, "%.0f mm", scaleUm / 1000) :
             String.format(java.util.Locale.US, "%.0f µm", scaleUm);
 
-      g2d_.setFont(new Font("SansSerif", Font.BOLD, 14));
+      // Use slightly smaller font for scale bar label
+      int scalebarFontSize = Math.max(10, fontSize_ * 3 / 4);
+      g2d_.setFont(new Font("SansSerif", Font.BOLD, scalebarFontSize));
       java.awt.FontMetrics fm = g2d_.getFontMetrics();
       int labelWidth = fm.stringWidth(label);
       int labelX = barX + (barLengthPx - labelWidth) / 2;

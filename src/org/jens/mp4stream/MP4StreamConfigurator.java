@@ -46,6 +46,8 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
    public static final String KEY_TIMESTAMP_COLOR = "mp4stream.timestampColor";
    public static final String KEY_TIMESTAMP_BACKGROUND = "mp4stream.timestampBackground";
    public static final String KEY_SCALEBAR_ENABLED = "mp4stream.scalebarEnabled";
+   public static final String KEY_FONT_SIZE = "mp4stream.fontSize";
+   public static final String KEY_SCALEBAR_LENGTH_UM = "mp4stream.scalebarLengthUm";
 
    // Recording modes
    public static final String MODE_CONSTANT_FPS = "constant_fps";
@@ -63,6 +65,8 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
    public static final String DEFAULT_TIMESTAMP_COLOR = COLOR_WHITE;
    public static final boolean DEFAULT_TIMESTAMP_BACKGROUND = true;
    public static final boolean DEFAULT_SCALEBAR_ENABLED = false;
+   public static final int DEFAULT_FONT_SIZE = 18;
+   public static final double DEFAULT_SCALEBAR_LENGTH_UM = 0.0; // 0 = auto
 
    public MP4StreamConfigurator(PropertyMap settings) {
       settings_ = settings;
@@ -103,6 +107,15 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
          } catch (Exception ignored) {}
       }
       return PREFS.getBoolean(key, defaultVal);
+   }
+
+   private int getSettingInt(String key, int defaultVal) {
+      if (settings_ != null) {
+         try {
+            return settings_.getInteger(key, defaultVal);
+         } catch (Exception ignored) {}
+      }
+      return PREFS.getInt(key, defaultVal);
    }
 
    @Override
@@ -267,6 +280,8 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       String currentTimestampColor = getSetting(KEY_TIMESTAMP_COLOR, DEFAULT_TIMESTAMP_COLOR);
       boolean currentTimestampBg = getSettingBoolean(KEY_TIMESTAMP_BACKGROUND, DEFAULT_TIMESTAMP_BACKGROUND);
       boolean currentScalebarEnabled = getSettingBoolean(KEY_SCALEBAR_ENABLED, DEFAULT_SCALEBAR_ENABLED);
+      int currentFontSize = getSettingInt(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+      double currentScalebarLength = getSettingDouble(KEY_SCALEBAR_LENGTH_UM, DEFAULT_SCALEBAR_LENGTH_UM);
 
       JPanel overlayPanel = new JPanel(new GridBagLayout());
       overlayPanel.setBorder(BorderFactory.createTitledBorder("Overlay"));
@@ -277,7 +292,7 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
 
       // Timestamp checkbox
       JCheckBox cbTimestamp = new JCheckBox("Show timestamp (Δt)", currentTimestampEnabled);
-      ogbc.gridx = 0; ogbc.gridy = 0; ogbc.gridwidth = 2;
+      ogbc.gridx = 0; ogbc.gridy = 0; ogbc.gridwidth = 3;
       overlayPanel.add(cbTimestamp, ogbc);
 
       // Text color
@@ -286,26 +301,51 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
 
       JComboBox<String> colorCombo = new JComboBox<>(new String[]{"White", "Black"});
       colorCombo.setSelectedItem(COLOR_BLACK.equals(currentTimestampColor) ? "Black" : "White");
-      ogbc.gridx = 1;
+      ogbc.gridx = 1; ogbc.gridwidth = 2;
       overlayPanel.add(colorCombo, ogbc);
+
+      // Font size
+      ogbc.gridx = 0; ogbc.gridy = 2; ogbc.gridwidth = 1;
+      overlayPanel.add(new JLabel("Font size:"), ogbc);
+
+      JSpinner fontSizeSpinner = new JSpinner(new SpinnerNumberModel(currentFontSize, 8, 72, 1));
+      ogbc.gridx = 1;
+      overlayPanel.add(fontSizeSpinner, ogbc);
+
+      ogbc.gridx = 2;
+      overlayPanel.add(new JLabel("px"), ogbc);
 
       // Background box
       JCheckBox cbBackground = new JCheckBox("Contrasting background", currentTimestampBg);
-      ogbc.gridx = 0; ogbc.gridy = 2; ogbc.gridwidth = 2;
+      ogbc.gridx = 0; ogbc.gridy = 3; ogbc.gridwidth = 3;
       overlayPanel.add(cbBackground, ogbc);
 
       // Scale bar
       JCheckBox cbScalebar = new JCheckBox("Show scale bar (requires pixel size)", currentScalebarEnabled);
-      ogbc.gridx = 0; ogbc.gridy = 3; ogbc.gridwidth = 2;
+      ogbc.gridx = 0; ogbc.gridy = 4; ogbc.gridwidth = 3;
       overlayPanel.add(cbScalebar, ogbc);
+
+      // Scale bar length
+      ogbc.gridx = 0; ogbc.gridy = 5; ogbc.gridwidth = 1;
+      overlayPanel.add(new JLabel("Scale bar:"), ogbc);
+
+      JSpinner scalebarSpinner = new JSpinner(new SpinnerNumberModel(currentScalebarLength, 0.0, 10000.0, 10.0));
+      ogbc.gridx = 1;
+      overlayPanel.add(scalebarSpinner, ogbc);
+
+      ogbc.gridx = 2;
+      overlayPanel.add(new JLabel("µm (0=auto)"), ogbc);
 
       // Enable/disable related controls
       Runnable updateOverlayControls = () -> {
          boolean tsEnabled = cbTimestamp.isSelected();
          colorCombo.setEnabled(tsEnabled);
-         cbBackground.setEnabled(tsEnabled);
+         fontSizeSpinner.setEnabled(tsEnabled || cbScalebar.isSelected());
+         cbBackground.setEnabled(tsEnabled || cbScalebar.isSelected());
+         scalebarSpinner.setEnabled(cbScalebar.isSelected());
       };
       cbTimestamp.addActionListener(e -> updateOverlayControls.run());
+      cbScalebar.addActionListener(e -> updateOverlayControls.run());
       updateOverlayControls.run();
 
       // Save overlay settings immediately when changed
@@ -314,11 +354,15 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
          PREFS.put(KEY_TIMESTAMP_COLOR, "Black".equals(colorCombo.getSelectedItem()) ? COLOR_BLACK : COLOR_WHITE);
          PREFS.putBoolean(KEY_TIMESTAMP_BACKGROUND, cbBackground.isSelected());
          PREFS.putBoolean(KEY_SCALEBAR_ENABLED, cbScalebar.isSelected());
+         PREFS.putInt(KEY_FONT_SIZE, (Integer) fontSizeSpinner.getValue());
+         PREFS.putDouble(KEY_SCALEBAR_LENGTH_UM, (Double) scalebarSpinner.getValue());
       };
       cbTimestamp.addActionListener(e -> saveOverlayToPrefs.run());
       colorCombo.addActionListener(e -> saveOverlayToPrefs.run());
       cbBackground.addActionListener(e -> saveOverlayToPrefs.run());
       cbScalebar.addActionListener(e -> saveOverlayToPrefs.run());
+      fontSizeSpinner.addChangeListener(e -> saveOverlayToPrefs.run());
+      scalebarSpinner.addChangeListener(e -> saveOverlayToPrefs.run());
 
       gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 3;
       mainPanel.add(overlayPanel, gbc);
@@ -364,6 +408,8 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       String timestampColor = "Black".equals(colorCombo.getSelectedItem()) ? COLOR_BLACK : COLOR_WHITE;
       boolean timestampBg = cbBackground.isSelected();
       boolean scalebarEnabled = cbScalebar.isSelected();
+      int fontSize = (Integer) fontSizeSpinner.getValue();
+      double scalebarLengthUm = (Double) scalebarSpinner.getValue();
 
       // Persist to preferences
       PREFS.put(KEY_OUTPUT_PATH, outPath);
@@ -375,6 +421,8 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       PREFS.put(KEY_TIMESTAMP_COLOR, timestampColor);
       PREFS.putBoolean(KEY_TIMESTAMP_BACKGROUND, timestampBg);
       PREFS.putBoolean(KEY_SCALEBAR_ENABLED, scalebarEnabled);
+      PREFS.putInt(KEY_FONT_SIZE, fontSize);
+      PREFS.putDouble(KEY_SCALEBAR_LENGTH_UM, scalebarLengthUm);
 
       // Build pipeline settings
       PropertyMap.Builder b = PropertyMaps.builder();
@@ -387,6 +435,8 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       b.putString(KEY_TIMESTAMP_COLOR, timestampColor);
       b.putBoolean(KEY_TIMESTAMP_BACKGROUND, timestampBg);
       b.putBoolean(KEY_SCALEBAR_ENABLED, scalebarEnabled);
+      b.putInteger(KEY_FONT_SIZE, fontSize);
+      b.putDouble(KEY_SCALEBAR_LENGTH_UM, scalebarLengthUm);
       settings_ = b.build();
    }
 
