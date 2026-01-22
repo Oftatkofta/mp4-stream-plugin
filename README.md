@@ -15,8 +15,9 @@ This plugin eliminates those steps. Common use cases:
 
 For quantitative analysis, you still want raw data. But when morphology and dynamics are what matters — and lossy compression is acceptable — this plugin gets you from Live mode to shareable video in seconds.
 
-**Bit depth conversion:** Scientific cameras typically output 8-bit, 12-bit, or 16-bit images, but video is 8-bit. This plugin uses Micro-Manager's display settings (the brightness/contrast sliders in the Live window) to map your data to 8-bit. What you see is what you get, adjust contrast before recording or during, it will work either way.
+**Bit depth conversion:** Scientific cameras output 12-bit or 16-bit images, but video is 8-bit. This plugin uses Micro-Manager's display settings (the brightness/contrast sliders) to map your data to 8-bit. What you see is what you get — adjust contrast before or during recording.
 
+**Important:** This plugin records the Live view only — the single-channel grayscale image currently displayed. Not for multi-channel acquisitions or MDA. Ideal for transmitted light (brightfield, phase contrast, DIC) or single-channel fluorescence. Output is always grayscale regardless of LUT.
 
 ## Features
 
@@ -74,7 +75,9 @@ Alternatively, set the full path to `ffmpeg.exe` in the plugin settings.
 
 Check the box next to "MP4 Stream (FFmpeg)" to enable recording.
 
-> **Note:** This plugin may be merged into Micro-Manager in the future. Until then, download from this repository.
+
+![Plugin Settings](images/settings-panel.png)
+> **Note:** My dream is for this plugin to be merged into Micro-Manager in the future. Until then, download from this repository.
 
 ## Configuration
 
