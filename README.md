@@ -67,6 +67,8 @@ The scale bar displays in µm or mm depending on length.
 
 ### Recording Modes
 
+All modes output video at the configured **target FPS** (default 30 fps). The modes differ in how they handle the timing of incoming frames.
+
 #### Constant FPS (default)
 - Output video plays at exactly the specified FPS
 - If camera is slower: duplicates last frame to fill gaps
@@ -76,12 +78,23 @@ The scale bar displays in µm or mm depending on length.
 #### Real-time (VFR)
 - Every frame from the camera is written exactly once
 - Playback timing matches actual capture timing
-- **Best for:** Recording at maximum camera speed, forensic/audit use
+- **Best for:** Recording at maximum camera speed, preserving every frame
 
 #### Time-lapse Compression
 - Compresses real time into shorter playback time
-- Factor of 10× means 10 minutes of recording plays in 1 minute
-- **Best for:** Long acquisitions with slow frame rates (long exposures)
+- Factor of 10× means 30 seconds of recording plays in 3 seconds
+- Output FPS is still the target FPS (e.g., 30 fps)
+- **Best for:** Slow cameras with long exposures (100ms+)
+
+**Example — Time-lapse 10× with 30 fps output:**
+
+| Camera Speed | 30s Recording | Video Duration | Frames Written |
+|--------------|---------------|----------------|----------------|
+| 1 fps (1000ms) | 30 frames captured | 3 seconds | ~90 (duplicated) |
+| 10 fps (100ms) | 300 frames captured | 3 seconds | ~90 (some dropped) |
+| 100 fps (10ms) | 3000 frames captured | 3 seconds | ~90 (most dropped) |
+
+**Recommendation:** For fast cameras (short exposures), use **Constant FPS** or **Real-time** mode instead of Time-lapse to avoid losing frames.
 
 ## Output Files
 
