@@ -20,23 +20,45 @@
 
 ## Requirements
 
-- **Micro-Manager 2.x** (tested with 2.0-gamma)
+- **Micro-Manager 2.x** (tested with MM Studio 2.0.3, MMCore 11.11.0)
 - **FFmpeg** — Either on system PATH or configured via settings
-- **JDK 8+** for building
-- **Apache Ant** for building
+- **JDK 8+** for building (only if building from source)
+- **Apache Ant** for building (only if building from source)
+
+### Installing FFmpeg
+
+FFmpeg is required for video encoding. Download and install from:
+
+- **Windows:** [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/) — download "essentials" build, extract, add `bin/` folder to PATH
+- **macOS:** `brew install ffmpeg`
+- **Linux:** `sudo apt install ffmpeg` (Debian/Ubuntu) or equivalent
+
+Verify installation: `ffmpeg -version`
+
+Alternatively, set the full path to `ffmpeg.exe` in the plugin settings.
 
 ## Installation
 
-1. Build the plugin:
-   ```bash
-   ant jar
-   ```
+### Option 1: Download Pre-built JAR (Recommended)
 
-2. Copy `build/jar/MP4Stream.jar` to your Micro-Manager `mmplugins/` folder
-
+1. Download `MP4Stream.jar` from the [releases page](../../releases) or `build/jar/` folder
+2. Copy to your Micro-Manager `mmplugins/` folder
 3. Restart Micro-Manager
 
-4. Enable via **Plugins → On-The-Fly Image Processing → Configure Processor Pipeline**
+### Option 2: Build from Source
+
+1. Clone this repository
+2. Build: `ant jar`
+3. Copy `build/jar/MP4Stream.jar` to your Micro-Manager `mmplugins/` folder
+4. Restart Micro-Manager
+
+### Enable the Plugin
+
+**Plugins → On-The-Fly Image Processing → Configure Processor Pipeline**
+
+Check the box next to "MP4 Stream" to enable recording.
+
+> **Note:** This plugin may be merged into Micro-Manager in the future. Until then, download from this repository.
 
 ## Configuration
 
@@ -111,6 +133,8 @@ Example: `experiment_2304x2304_seg001.mp4`
 See [TESTING.md](TESTING.md) for comprehensive test checklist.
 
 ### Verified (2026-01-22)
+
+Tested with **MM Studio 2.0.3** (nightly 20260116), **MMCore 11.11.0**, Java 11.0.27
 
 **Demo Camera (512×512)**
 
