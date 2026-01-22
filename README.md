@@ -149,9 +149,9 @@ Tested on **Windows 11** with **MM Studio 2.0.3** (nightly 20260116), **MMCore 1
 | Time-lapse | 10x @30fps | 1000ms | 178 | ✓ Compression |
 | Immediate finalization | Any | Any | 1 | ✓ Event-driven |
 
-**Real Microscope — Hamamatsu ORCA-Fusion (2304×2304)**
+**Real Microscope — Hamamatsu ORCA-Fusion C14440-20UP**
 
-Hardware: Thorlabs XY stage, Thorlabs DC4100 LED, pixel size 0.1091 µm
+Hardware: 2304×2304 resolution, pixel size 0.1091 µm
 
 | Test | Mode | Frames | Result |
 |------|------|--------|--------|
