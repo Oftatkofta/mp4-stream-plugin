@@ -245,6 +245,8 @@ ffmpeg -y -f rawvideo -pix_fmt gray -s WxH -r FPS -i -
 - `MP4StreamFactory` — Processor instantiation
 - `MP4StreamPlugin` — Plugin registration
 
+Code follows [Micro-Manager Coding Style and Conventions](https://micro-manager.org/Micro-Manager_Coding_Style_and_Conventions).
+
 ### Event Handling
 - Subscribes to `LiveModeEvent` and `AcquisitionEndedEvent`
 - Finalizes MP4 immediately when Live/MDA stops
