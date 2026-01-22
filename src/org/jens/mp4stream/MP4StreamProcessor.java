@@ -466,6 +466,7 @@ public final class MP4StreamProcessor implements Processor {
       width_ = w;
       height_ = h;
       segmentIndex_++;
+      scaleBarLoggedThisSegment_ = false;
 
       // Load recording mode settings directly from PREFS (they're saved immediately when changed)
       recordingMode_ = PREFS.get(MP4StreamConfigurator.KEY_RECORDING_MODE, 
@@ -1003,17 +1004,23 @@ public final class MP4StreamProcessor implements Processor {
          g2d_.drawString(text, 10, 21);
       }
 
-      // Draw scale bar (bottom-right)
-      if (scalebarEnabled_ && pixelSizeUm_ > 0) {
-         drawScaleBar(w, h, textColor, shadowColor, bgColor);
+      // Draw scale bar (bottom-right) - read pixel size fresh each time
+      // to handle objective changes during recording
+      if (scalebarEnabled_) {
+         double currentPixelSize = getPixelSizeUm();
+         if (currentPixelSize > 0) {
+            drawScaleBar(w, h, textColor, shadowColor, bgColor, currentPixelSize);
+         }
       }
 
       // Copy back out
       System.arraycopy(backing, 0, plane8, 0, Math.min(plane8.length, backing.length));
    }
 
+   private boolean scaleBarLoggedThisSegment_ = false;
+
    private void drawScaleBar(int w, int h, java.awt.Color textColor, 
-         java.awt.Color shadowColor, java.awt.Color bgColor) {
+         java.awt.Color shadowColor, java.awt.Color bgColor, double pixelSizeUm) {
       double scaleUm;
 
       if (scalebarLengthUm_ > 0) {
@@ -1021,7 +1028,7 @@ public final class MP4StreamProcessor implements Processor {
          scaleUm = scalebarLengthUm_;
       } else {
          // Auto-calculate: find a nice round number (~15% of image width)
-         double imageWidthUm = w * pixelSizeUm_;
+         double imageWidthUm = w * pixelSizeUm;
          double targetUm = imageWidthUm * 0.15;
          double[] niceValues = {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
          scaleUm = niceValues[0];
@@ -1034,7 +1041,15 @@ public final class MP4StreamProcessor implements Processor {
          }
       }
 
-      int barLengthPx = (int) Math.round(scaleUm / pixelSizeUm_);
+      // Log scale bar calculation once per segment
+      if (!scaleBarLoggedThisSegment_) {
+         logDebug_(String.format(java.util.Locale.US, 
+               "Scale bar: pixelSize=%.4f µm, imageWidth=%.0f µm, scaleUm=%.0f",
+               pixelSizeUm, w * pixelSizeUm, scaleUm));
+         scaleBarLoggedThisSegment_ = true;
+      }
+
+      int barLengthPx = (int) Math.round(scaleUm / pixelSizeUm);
       if (barLengthPx < 20) barLengthPx = 20; // Minimum visible length
       if (barLengthPx > w - 20) barLengthPx = w - 20; // Max 
 
