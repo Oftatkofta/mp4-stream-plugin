@@ -1,0 +1,1228 @@
+2026-01-22T13:59:49.691659 tid14064 [IFO,LogManager] Enabled primary log file C:\Program Files\Micro-Manager-2.0-3-gamma-nightly\CoreLogs\CoreLog20260122T135949_pid16752.txt
+2026-01-22T13:59:49.691810 tid14064 [IFO,App] User: admin
+2026-01-22T13:59:49.691993 tid14064 [IFO,App] Host: FLEXOPC
+2026-01-22T13:59:49.692003 tid14064 [IFO,App] MM Studio version: 2.0.3 20260116
+2026-01-22T13:59:49.692039 tid14064 [IFO,App] MMCore version 11.11.0
+2026-01-22T13:59:49.692057 tid14064 [IFO,App] Device API version 74, Module API version 10
+2026-01-22T13:59:49.692065 tid14064 [IFO,App] Operating System: Windows 11 (amd64) 10.0
+2026-01-22T13:59:49.692074 tid14064 [IFO,App] JVM: OpenJDK 64-Bit Server VM, version 11.0.27, 64-bit
+2026-01-22T13:59:49.735785 tid7352 [IFO,App] Unable to instantiate class for class='org.scijava.ui.swing.viewer.table.SwingTableDisplayViewer', priority=0.0, enabled=true, pluginType=DisplayViewer
+                                   [       ] org.scijava.InstantiableException: Class not found: org.scijava.ui.swing.viewer.table.SwingTableDisplayViewer in Thread[Plugin loading thread,6,main]
+                                   [       ]   at org.scijava.plugin.PluginInfo.loadClass(PluginInfo.java:290)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.PluginFinder.findPluginsWithLoader(PluginFinder.java:111)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.DefaultPluginManager.loadPlugins(DefaultPluginManager.java:126)
+                                   [       ]   at java.base/java.lang.Thread.run(Unknown Source)
+                                   [       ] Caused by: java.lang.IllegalArgumentException: Cannot load class: org.scijava.ui.swing.viewer.table.SwingTableDisplayViewer
+                                   [       ]   at org.scijava.util.Types.iae(Types.java:975)
+                                   [       ]   at org.scijava.util.Types.load(Types.java:234)
+                                   [       ]   at org.scijava.plugin.PluginInfo.loadClass(PluginInfo.java:284)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.PluginFinder.findPluginsWithLoader(PluginFinder.java:111)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.DefaultPluginManager.loadPlugins(DefaultPluginManager.java:126)
+                                   [       ]   at java.base/java.lang.Thread.run(Unknown Source)
+                                   [       ] Caused by: java.lang.NoClassDefFoundError: org/scijava/ui/viewer/table/AbstractTableDisplayViewer
+                                   [       ]   at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+                                   [       ]   at java.base/java.lang.ClassLoader.defineClass(Unknown Source)
+                                   [       ]   at java.base/java.security.SecureClassLoader.defineClass(Unknown Source)
+                                   [       ]   at java.base/java.net.URLClassLoader.defineClass(Unknown Source)
+                                   [       ]   at java.base/java.net.URLClassLoader$1.run(Unknown Source)
+                                   [       ]   at java.base/java.net.URLClassLoader$1.run(Unknown Source)
+                                   [       ]   at java.base/java.security.AccessController.doPrivileged(Native Method)
+                                   [       ]   at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+                                   [       ]   at org.scijava.util.Types.load(Types.java:226)
+                                   [       ]   at org.scijava.plugin.PluginInfo.loadClass(PluginInfo.java:284)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.PluginFinder.findPluginsWithLoader(PluginFinder.java:111)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.DefaultPluginManager.loadPlugins(DefaultPluginManager.java:126)
+                                   [       ]   at java.base/java.lang.Thread.run(Unknown Source)
+                                   [       ] Caused by: java.lang.ClassNotFoundException: org.scijava.ui.viewer.table.AbstractTableDisplayViewer
+                                   [       ]   at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+                                   [       ]   at java.base/java.lang.ClassLoader.defineClass(Unknown Source)
+                                   [       ]   at java.base/java.security.SecureClassLoader.defineClass(Unknown Source)
+                                   [       ]   at java.base/java.net.URLClassLoader.defineClass(Unknown Source)
+                                   [       ]   at java.base/java.net.URLClassLoader$1.run(Unknown Source)
+                                   [       ]   at java.base/java.net.URLClassLoader$1.run(Unknown Source)
+                                   [       ]   at java.base/java.security.AccessController.doPrivileged(Native Method)
+                                   [       ]   at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+                                   [       ]   at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+                                   [       ]   at org.scijava.util.Types.load(Types.java:226)
+                                   [       ]   at org.scijava.plugin.PluginInfo.loadClass(PluginInfo.java:284)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.PluginFinder.findPluginsWithLoader(PluginFinder.java:111)
+                                   [       ]   at org.micromanager.internal.pluginmanagement.DefaultPluginManager.loadPlugins(DefaultPluginManager.java:126)
+                                   [       ]   at java.base/java.lang.Thread.run(Unknown Source)
+2026-01-22T13:59:49.938832 tid7352 [IFO,App] Found plugin org.micromanager.display.inspector.internal.panels.intensity.IntensityInspectorPanelPlugin@70347bb9
+2026-01-22T13:59:49.938965 tid7352 [IFO,App] Found plugin org.micromanager.display.inspector.internal.panels.metadata.SummaryMetadataInspectorPanelPlugin@3ea33944
+2026-01-22T13:59:49.939037 tid7352 [IFO,App] Found plugin org.micromanager.display.inspector.internal.panels.metadata.PlaneMetadataInspectorPanelPlugin@734f30cd
+2026-01-22T13:59:49.939118 tid7352 [IFO,App] Found plugin org.micromanager.display.inspector.internal.panels.comments.CommentsInspectorPanelPlugin@c7c89f
+2026-01-22T13:59:49.939632 tid7352 [IFO,App] Found plugin org.micromanager.display.overlay.internal.overlays.PatternOverlayPlugin@55331ffc
+2026-01-22T13:59:49.939703 tid7352 [IFO,App] Found plugin org.micromanager.display.inspector.internal.panels.navigation.NavigationInspectorPanelPlugin@43e125fa
+2026-01-22T13:59:49.939787 tid7352 [IFO,App] Found plugin org.micromanager.display.inspector.internal.panels.overlays.OverlaysInspectorPanelPlugin@10f9a3a9
+2026-01-22T13:59:49.939883 tid7352 [IFO,App] Found plugin org.micromanager.display.overlay.internal.overlays.ScaleBarPlugin@67c76cfa
+2026-01-22T13:59:49.939954 tid7352 [IFO,App] Found plugin org.micromanager.display.overlay.internal.overlays.TextOverlayPlugin@2347e339
+2026-01-22T13:59:49.940024 tid7352 [IFO,App] Found plugin org.micromanager.display.overlay.internal.overlays.TimestampPlugin@48dd1274
+2026-01-22T13:59:49.940348 tid7352 [IFO,App] Found plugin org.jens.mp4stream.MP4StreamPlugin@5d75d63c
+2026-01-22T13:59:49.942172 tid7352 [IFO,App] Found plugin org.micromanager.acquisition.internal.DefaultMDAPlugin@6ee73810
+2026-01-22T13:59:49.942270 tid7352 [IFO,App] Found plugin org.micromanager.acquisition.internal.acqengjcompat.multimda.MultiMDA@3979989a
+2026-01-22T13:59:49.942491 tid7352 [IFO,App] Found plugin org.micromanager.display.internal.gearmenu.CopyToImageJItem@758f403b
+2026-01-22T13:59:49.942582 tid7352 [IFO,App] Found plugin org.micromanager.display.internal.gearmenu.ExportImagesItem@10b00d9b
+2026-01-22T13:59:49.942653 tid7352 [IFO,App] Found plugin org.micromanager.display.internal.gearmenu.LineProfileItem@43cc9a50
+2026-01-22T13:59:49.945045 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.AutofocusButtons@6930ad9d
+2026-01-22T13:59:49.945186 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.CloseAllButton@6c7e42d7
+2026-01-22T13:59:49.945556 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.ExposureTime@142a66d9
+2026-01-22T13:59:49.946623 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.LiveButton@52d15d00
+2026-01-22T13:59:49.947155 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.MDAButtons@2e22bfa6
+2026-01-22T13:59:49.947536 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.PresetButton@2c903499
+2026-01-22T13:59:49.947624 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.RefreshButton@471bbba
+2026-01-22T13:59:49.948006 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.SavedMDAButton@362c2ef9
+2026-01-22T13:59:49.948373 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.ScriptButton@72a6cde5
+2026-01-22T13:59:49.948576 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.ShutterControl@4804f9c6
+2026-01-22T13:59:49.948989 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.SnapButton@2a021ddf
+2026-01-22T13:59:49.949102 tid7352 [IFO,App] Found plugin org.micromanager.quickaccess.internal.controls.TextLabel@77c80f5
+2026-01-22T13:59:49.949452 tid7352 [IFO,App] Plugin loading took 879ms
+2026-01-22T13:59:49.949493 tid14064 [IFO,App] Finished waiting for plugins to load
+2026-01-22T13:59:52.342874 tid14064 [dbg,App] [UI] JComboBox clicked in IntroDlg.
+2026-01-22T13:59:54.934844 tid14064 [dbg,App] [UI]  "ComboBox.list" set to "C:\Program Files\Micro-Manager-2.0gamma\flexoscope_no_Zstage.cfg" in IntroDlg.
+2026-01-22T13:59:56.679844 tid14064 [IFO,App] Error: Failed to get optimalZ step from core
+2026-01-22T13:59:56.882782 tid14064 [IFO,Core] Default camera unset
+2026-01-22T13:59:56.882797 tid14064 [IFO,Core] Default xy stage unset
+2026-01-22T13:59:56.882802 tid14064 [IFO,Core] Default stage unset
+2026-01-22T13:59:56.882804 tid14064 [IFO,Core] Default autofocus unset
+2026-01-22T13:59:56.882809 tid14064 [IFO,Core] Default image processor unset
+2026-01-22T13:59:56.882812 tid14064 [IFO,Core] Default galvo unset
+2026-01-22T13:59:56.882816 tid14064 [IFO,Core] Default SLM unset
+2026-01-22T13:59:56.882829 tid14064 [dbg,Core] Will unload all devices
+2026-01-22T13:59:56.882830 tid14064 [IFO,Core] Did unload all devices
+2026-01-22T13:59:56.882849 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T13:59:56.882880 tid14064 [IFO,Core] Loading system configuration from:"C:\Program Files\Micro-Manager-2.0gamma\flexoscope_no_Zstage.cfg"
+2026-01-22T13:59:56.883421 tid14064 [dbg,Core] Will set Core property: Initialize = 0
+2026-01-22T13:59:56.883424 tid14064 [IFO,Core] Default camera unset
+2026-01-22T13:59:56.883427 tid14064 [IFO,Core] Default xy stage unset
+2026-01-22T13:59:56.883429 tid14064 [IFO,Core] Default stage unset
+2026-01-22T13:59:56.883433 tid14064 [IFO,Core] Default autofocus unset
+2026-01-22T13:59:56.883434 tid14064 [IFO,Core] Default image processor unset
+2026-01-22T13:59:56.883436 tid14064 [IFO,Core] Default galvo unset
+2026-01-22T13:59:56.883437 tid14064 [IFO,Core] Default SLM unset
+2026-01-22T13:59:56.883440 tid14064 [dbg,Core] Will unload all devices
+2026-01-22T13:59:56.883441 tid14064 [IFO,Core] Did unload all devices
+2026-01-22T13:59:56.883484 tid14064 [dbg,App] Notification for Device: Core Property: Initialize changed to value: 0
+2026-01-22T13:59:56.883486 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T13:59:56.883490 tid14064 [dbg,Core] Did set Core property: Initialize = 0
+2026-01-22T13:59:56.883503 tid14064 [dbg,Core] Will load device COM6 from SerialManager
+2026-01-22T13:59:56.885151 tid14064 [IFO,Core] Did load device COM6 from SerialManager; label = COM6
+2026-01-22T13:59:56.885161 tid14064 [dbg,Core] Will load device COM7 from SerialManager
+2026-01-22T13:59:56.885189 tid14064 [IFO,Core] Did load device COM7 from SerialManager; label = COM7
+2026-01-22T13:59:56.885192 tid14064 [dbg,Core] Will load device COM4 from SerialManager
+2026-01-22T13:59:56.885215 tid14064 [IFO,Core] Did load device COM4 from SerialManager; label = COM4
+2026-01-22T13:59:56.885224 tid14064 [dbg,Core] Will load device HamamatsuHam_DCAM from HamamatsuHam
+2026-01-22T13:59:56.888767 tid14064 [IFO,Core] Did load device HamamatsuHam_DCAM from HamamatsuHam; label = ORCA-Fusion
+2026-01-22T13:59:56.888779 tid14064 [dbg,Core] Will load device Thorlabs DC4100 from ThorlabsDCxxxx
+2026-01-22T13:59:56.914345 tid14064 [IFO,Core] Did load device Thorlabs DC4100 from ThorlabsDCxxxx; label = Thorlabs DC4100
+2026-01-22T13:59:56.914358 tid14064 [dbg,Core] Will load device Arduino-Hub from Arduino
+2026-01-22T13:59:56.915522 tid14064 [IFO,Core] Did load device Arduino-Hub from Arduino; label = Arduino-Hub
+2026-01-22T13:59:56.915531 tid14064 [dbg,Core] Will load device Arduino-Shutter from Arduino
+2026-01-22T13:59:56.915551 tid14064 [IFO,Core] Did load device Arduino-Shutter from Arduino; label = Arduino-Shutter
+2026-01-22T13:59:56.915555 tid14064 [dbg,Core] Will load device Arduino-Switch from Arduino
+2026-01-22T13:59:56.915572 tid14064 [IFO,Core] Did load device Arduino-Switch from Arduino; label = Arduino-Switch
+2026-01-22T13:59:56.915576 tid14064 [dbg,Core] Will load device XYStage from Thorlabs
+2026-01-22T13:59:56.916523 tid14064 [IFO,Core] Did load device XYStage from Thorlabs; label = XYStage
+2026-01-22T13:59:56.916531 tid14064 [dbg,Core:dev:Thorlabs DC4100] Will set property "Port" to "COM6"
+2026-01-22T13:59:56.916539 tid14064 [dbg,Core:dev:Thorlabs DC4100] Did set property "Port" to "COM6"
+2026-01-22T13:59:56.916544 tid14064 [dbg,Core:dev:Arduino-Hub] Will set property "Logic" to "Normal"
+2026-01-22T13:59:56.916547 tid14064 [dbg,Core:dev:Arduino-Hub] Did set property "Logic" to "Normal"
+2026-01-22T13:59:56.916553 tid14064 [dbg,Core:dev:Arduino-Hub] Will set property "Port" to "COM4"
+2026-01-22T13:59:56.916554 tid14064 [dbg,Core:dev:Arduino-Hub] Did set property "Port" to "COM4"
+2026-01-22T13:59:56.916558 tid14064 [dbg,Core:dev:XYStage] Will set property "Port" to "COM7"
+2026-01-22T13:59:56.916562 tid14064 [dbg,Core:dev:XYStage] Did set property "Port" to "COM7"
+2026-01-22T13:59:56.916567 tid14064 [dbg,Core:dev:COM6] Will set property "AnswerTimeout" to "500.0000"
+2026-01-22T13:59:56.916582 tid14064 [dbg,Core:dev:COM6] Did set property "AnswerTimeout" to "500.0000"
+2026-01-22T13:59:56.916586 tid14064 [dbg,Core:dev:COM6] Will set property "BaudRate" to "115200"
+2026-01-22T13:59:56.916588 tid14064 [dbg,Core:dev:COM6] Did set property "BaudRate" to "115200"
+2026-01-22T13:59:56.916593 tid14064 [dbg,Core:dev:COM6] Will set property "DataBits" to "8"
+2026-01-22T13:59:56.916596 tid14064 [dbg,Core:dev:COM6] Did set property "DataBits" to "8"
+2026-01-22T13:59:56.916599 tid14064 [dbg,Core:dev:COM6] Will set property "DelayBetweenCharsMs" to "0.0000"
+2026-01-22T13:59:56.916602 tid14064 [dbg,Core:dev:COM6] Did set property "DelayBetweenCharsMs" to "0.0000"
+2026-01-22T13:59:56.916605 tid14064 [dbg,Core:dev:COM6] Will set property "Fast USB to Serial" to "Disable"
+2026-01-22T13:59:56.916608 tid14064 [dbg,Core:dev:COM6] Did set property "Fast USB to Serial" to "Disable"
+2026-01-22T13:59:56.916611 tid14064 [dbg,Core:dev:COM6] Will set property "Handshaking" to "Off"
+2026-01-22T13:59:56.916613 tid14064 [dbg,Core:dev:COM6] Did set property "Handshaking" to "Off"
+2026-01-22T13:59:56.916616 tid14064 [dbg,Core:dev:COM6] Will set property "Parity" to "None"
+2026-01-22T13:59:56.916618 tid14064 [dbg,Core:dev:COM6] Did set property "Parity" to "None"
+2026-01-22T13:59:56.916621 tid14064 [dbg,Core:dev:COM6] Will set property "StopBits" to "1"
+2026-01-22T13:59:56.916622 tid14064 [dbg,Core:dev:COM6] Did set property "StopBits" to "1"
+2026-01-22T13:59:56.916627 tid14064 [dbg,Core:dev:COM6] Will set property "Verbose" to "1"
+2026-01-22T13:59:56.916629 tid14064 [dbg,Core:dev:COM6] Did set property "Verbose" to "1"
+2026-01-22T13:59:56.916631 tid14064 [dbg,Core:dev:COM6] Will set property "DTR" to "Disable"
+2026-01-22T13:59:56.916633 tid14064 [dbg,Core:dev:COM6] Did set property "DTR" to "Disable"
+2026-01-22T13:59:56.916636 tid14064 [dbg,Core:dev:COM7] Will set property "AnswerTimeout" to "500.0000"
+2026-01-22T13:59:56.916638 tid14064 [dbg,Core:dev:COM7] Did set property "AnswerTimeout" to "500.0000"
+2026-01-22T13:59:56.916642 tid14064 [dbg,Core:dev:COM7] Will set property "BaudRate" to "115200"
+2026-01-22T13:59:56.916643 tid14064 [dbg,Core:dev:COM7] Did set property "BaudRate" to "115200"
+2026-01-22T13:59:56.916646 tid14064 [dbg,Core:dev:COM7] Will set property "DataBits" to "8"
+2026-01-22T13:59:56.916648 tid14064 [dbg,Core:dev:COM7] Did set property "DataBits" to "8"
+2026-01-22T13:59:56.916651 tid14064 [dbg,Core:dev:COM7] Will set property "DelayBetweenCharsMs" to "0.0000"
+2026-01-22T13:59:56.916654 tid14064 [dbg,Core:dev:COM7] Did set property "DelayBetweenCharsMs" to "0.0000"
+2026-01-22T13:59:56.916658 tid14064 [dbg,Core:dev:COM7] Will set property "Fast USB to Serial" to "Disable"
+2026-01-22T13:59:56.916660 tid14064 [dbg,Core:dev:COM7] Did set property "Fast USB to Serial" to "Disable"
+2026-01-22T13:59:56.916663 tid14064 [dbg,Core:dev:COM7] Will set property "Handshaking" to "Off"
+2026-01-22T13:59:56.916665 tid14064 [dbg,Core:dev:COM7] Did set property "Handshaking" to "Off"
+2026-01-22T13:59:56.916668 tid14064 [dbg,Core:dev:COM7] Will set property "Parity" to "None"
+2026-01-22T13:59:56.916669 tid14064 [dbg,Core:dev:COM7] Did set property "Parity" to "None"
+2026-01-22T13:59:56.916674 tid14064 [dbg,Core:dev:COM7] Will set property "StopBits" to "1"
+2026-01-22T13:59:56.916676 tid14064 [dbg,Core:dev:COM7] Did set property "StopBits" to "1"
+2026-01-22T13:59:56.916679 tid14064 [dbg,Core:dev:COM7] Will set property "Verbose" to "1"
+2026-01-22T13:59:56.916680 tid14064 [dbg,Core:dev:COM7] Did set property "Verbose" to "1"
+2026-01-22T13:59:56.916683 tid14064 [dbg,Core:dev:COM7] Will set property "DTR" to "Disable"
+2026-01-22T13:59:56.916685 tid14064 [dbg,Core:dev:COM7] Did set property "DTR" to "Disable"
+2026-01-22T13:59:56.916688 tid14064 [dbg,Core:dev:COM4] Will set property "AnswerTimeout" to "500.0000"
+2026-01-22T13:59:56.916690 tid14064 [dbg,Core:dev:COM4] Did set property "AnswerTimeout" to "500.0000"
+2026-01-22T13:59:56.916693 tid14064 [dbg,Core:dev:COM4] Will set property "BaudRate" to "57600"
+2026-01-22T13:59:56.916695 tid14064 [dbg,Core:dev:COM4] Did set property "BaudRate" to "57600"
+2026-01-22T13:59:56.916697 tid14064 [dbg,Core:dev:COM4] Will set property "DataBits" to "8"
+2026-01-22T13:59:56.916699 tid14064 [dbg,Core:dev:COM4] Did set property "DataBits" to "8"
+2026-01-22T13:59:56.916702 tid14064 [dbg,Core:dev:COM4] Will set property "DelayBetweenCharsMs" to "0.0000"
+2026-01-22T13:59:56.916704 tid14064 [dbg,Core:dev:COM4] Did set property "DelayBetweenCharsMs" to "0.0000"
+2026-01-22T13:59:56.916720 tid14064 [dbg,Core:dev:COM4] Will set property "Fast USB to Serial" to "Disable"
+2026-01-22T13:59:56.916722 tid14064 [dbg,Core:dev:COM4] Did set property "Fast USB to Serial" to "Disable"
+2026-01-22T13:59:56.916725 tid14064 [dbg,Core:dev:COM4] Will set property "Handshaking" to "Off"
+2026-01-22T13:59:56.916727 tid14064 [dbg,Core:dev:COM4] Did set property "Handshaking" to "Off"
+2026-01-22T13:59:56.916730 tid14064 [dbg,Core:dev:COM4] Will set property "Parity" to "None"
+2026-01-22T13:59:56.916731 tid14064 [dbg,Core:dev:COM4] Did set property "Parity" to "None"
+2026-01-22T13:59:56.916734 tid14064 [dbg,Core:dev:COM4] Will set property "StopBits" to "1"
+2026-01-22T13:59:56.916736 tid14064 [dbg,Core:dev:COM4] Did set property "StopBits" to "1"
+2026-01-22T13:59:56.916738 tid14064 [dbg,Core:dev:COM4] Will set property "Verbose" to "1"
+2026-01-22T13:59:56.916740 tid14064 [dbg,Core:dev:COM4] Did set property "Verbose" to "1"
+2026-01-22T13:59:56.916742 tid14064 [dbg,Core:dev:COM4] Will set property "DTR" to "Disable"
+2026-01-22T13:59:56.916744 tid14064 [dbg,Core:dev:COM4] Did set property "DTR" to "Disable"
+2026-01-22T13:59:56.916760 tid14064 [dbg,Core] Will set Core property: Initialize = 1
+2026-01-22T13:59:56.916772 tid14064 [IFO,Core] Will initialize 9 devices (in parallel)
+2026-01-22T13:59:56.916781 tid14064 [IFO,Core] Will initialize device COM6
+2026-01-22T13:59:56.918450 tid14064 [IFO,dev:COM6] Setting standard USB to Serial settings
+2026-01-22T13:59:56.918808 tid14064 [dbg,dev:COM6] Attempting to set flow of COM6 to none
+2026-01-22T13:59:56.919240 tid14064 [dbg,dev:COM6] Attempting to set parity of COM6 to none
+2026-01-22T13:59:56.919541 tid14064 [dbg,dev:COM6] Attempting to set stopBits of COM6 to 1
+2026-01-22T13:59:56.919846 tid14064 [dbg,dev:COM6] Attempting to set dataBits of COM6 to 8
+2026-01-22T13:59:56.920257 tid14064 [IFO,Core] Did initialize device COM6
+2026-01-22T13:59:56.920261 tid14064 [IFO,Core] Will initialize device COM7
+2026-01-22T13:59:56.925051 tid14064 [IFO,dev:COM7] Setting standard USB to Serial settings
+2026-01-22T13:59:56.925356 tid14064 [dbg,dev:COM7] Attempting to set flow of COM7 to none
+2026-01-22T13:59:56.925701 tid14064 [dbg,dev:COM7] Attempting to set parity of COM7 to none
+2026-01-22T13:59:56.926052 tid14064 [dbg,dev:COM7] Attempting to set stopBits of COM7 to 1
+2026-01-22T13:59:56.926344 tid14064 [dbg,dev:COM7] Attempting to set dataBits of COM7 to 8
+2026-01-22T13:59:56.926743 tid14064 [IFO,Core] Did initialize device COM7
+2026-01-22T13:59:56.926746 tid14064 [IFO,Core] Will initialize device COM4
+2026-01-22T13:59:56.928222 tid14064 [IFO,dev:COM4] Setting standard USB to Serial settings
+2026-01-22T13:59:56.929553 tid14064 [dbg,dev:COM4] Attempting to set flow of COM4 to none
+2026-01-22T13:59:56.930832 tid14064 [dbg,dev:COM4] Attempting to set parity of COM4 to none
+2026-01-22T13:59:56.932079 tid14064 [dbg,dev:COM4] Attempting to set stopBits of COM4 to 1
+2026-01-22T13:59:56.933376 tid14064 [dbg,dev:COM4] Attempting to set dataBits of COM4 to 8
+2026-01-22T13:59:56.934664 tid14064 [IFO,Core] Did initialize device COM4
+2026-01-22T13:59:56.934711 tid13152 [IFO,Core] Will initialize device XYStage
+2026-01-22T13:59:56.934735 tid16260 [IFO,Core] Will initialize device ORCA-Fusion
+2026-01-22T13:59:56.934783 tid13152 [dbg,dev:COM7] Write -> (hex) 05 00 00 00 11 01
+2026-01-22T13:59:56.934886 tid16076 [IFO,Core] Will initialize device Thorlabs DC4100
+2026-01-22T13:59:56.934914 tid16076 [dbg,dev:COM6] SetCommand -> n?\r\n
+2026-01-22T13:59:56.934952 tid13528 [IFO,Core] Will initialize device Arduino-Hub
+2026-01-22T13:59:56.952518 tid16076 [dbg,dev:COM6] GetAnswer <- DC4100\r\n
+2026-01-22T13:59:56.952528 tid13152 [dbg,dev:COM7] Read <- (hex) 06 00 54 00 81 11
+2026-01-22T13:59:56.952530 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:56.952601 tid13152 [dbg,dev:COM7] Read <- (hex) 58 0d 69 04 42 42 44 32 30 32 00 00 2d 00 05 01 02 00 41 50 54 20 32 20 43 68 61 6e 6e 65 6c 20 49 6e 74 65 67 72 61 74 65 64 20 42 4c 44 43 20
+2026-01-22T13:59:56.972639 tid13152 [dbg,dev:COM7] Read <- (hex) 4d 6f 74 6f 72 20 43 6f 6e 74 72 6f 6c 6c 65 72 00 00 30 39 32 39 31 30 41 75 67 31 37 00 02 00 00 00 02 00
+2026-01-22T13:59:56.972653 tid13152 [dbg,dev:COM7] Write -> (hex) 05 00 00 00 11 01
+2026-01-22T13:59:56.982641 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:56.982703 tid16076 [dbg,dev:COM6] SetCommand -> r?\n
+2026-01-22T13:59:57.002768 tid13152 [dbg,dev:COM7] Read <- (hex) 06 00 54 00 81 11
+2026-01-22T13:59:57.002840 tid13152 [dbg,dev:COM7] Read <- (hex) 58 0d 69 04 42 42 44 32 30 32 00 00 2d 00 05 01 02 00 41 50 54 20 32 20 43 68 61 6e 6e 65 6c 20 49 6e 74 65 67 72 61 74 65 64 20 42 4c 44 43 20 4d
+2026-01-22T13:59:57.013083 tid16076 [dbg,dev:COM6] GetAnswer <- 268435456\r\n
+2026-01-22T13:59:57.013095 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.023158 tid13152 [dbg,dev:COM7] Read <- (hex) 6f 74 6f 72 20 43 6f 6e 74 72 6f 6c 6c 65 72 00 00 30 39 32 39 31 30 41 75 67 31 37 00 02 00 00 00 02 00
+2026-01-22T13:59:57.023178 tid13152 [dbg,dev:COM7] Write -> (hex) 90 04 01 00 21 01
+2026-01-22T13:59:57.043534 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.043617 tid16076 [dbg,dev:COM6] SetCommand -> s?\r\n
+2026-01-22T13:59:57.053568 tid13152 [dbg,dev:COM7] Read <- (hex) 91 04 0e 00 81 21
+2026-01-22T13:59:57.053590 tid13152 [dbg,dev:COM7] Read <- (hex) 01 00 e0 c8 10 00 00 00 8f a4 00 34 00 80
+2026-01-22T13:59:57.053604 tid13152 [dbg,dev:COM7] Write -> (hex) 90 04 01 00 22 01
+2026-01-22T13:59:57.073373 tid16076 [dbg,dev:COM6] GetAnswer <- M00532685\r\n
+2026-01-22T13:59:57.073385 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.083126 tid13152 [dbg,dev:COM7] Read <- (hex) 91 04 0e 00 81 22
+2026-01-22T13:59:57.083147 tid13152 [dbg,dev:COM7] Read <- (hex) 01 00 b0 71 0b 00 00 00 b7 7c 00 34 00 80
+2026-01-22T13:59:57.083160 tid13152 [dbg,dev:COM7] Write -> (hex) 90 04 01 00 21 01
+2026-01-22T13:59:57.102698 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.102718 tid16076 [dbg,dev:COM6] SetCommand -> v?\r\n
+2026-01-22T13:59:57.112697 tid13152 [dbg,dev:COM7] Read <- (hex) 91 04 0e 00 81 21
+2026-01-22T13:59:57.112721 tid13152 [dbg,dev:COM7] Read <- (hex) 01 00 e0 c8 10 00 00 00 8f a4 00 34 00 80
+2026-01-22T13:59:57.112733 tid13152 [dbg,dev:XYStage] Status X axis (hex): 80003400
+2026-01-22T13:59:57.112775 tid13152 [dbg,dev:COM7] Write -> (hex) 14 04 01 00 21 01
+2026-01-22T13:59:57.132233 tid16076 [dbg,dev:COM6] GetAnswer <- 1.2.0\r\n
+2026-01-22T13:59:57.132246 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.142274 tid13152 [dbg,dev:COM7] Read <- (hex) 15 04 0e 00 81 21
+2026-01-22T13:59:57.142296 tid13152 [dbg,dev:COM7] Read <- (hex) 01 00 00 00 00 00 0d 00 00 00 4a 0c 02 00
+2026-01-22T13:59:57.142309 tid13152 [dbg,dev:COM7] Write -> (hex) 14 04 01 00 21 01
+2026-01-22T13:59:57.161817 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.161841 tid16076 [dbg,dev:COM6] SetCommand -> wl? 0\r\n
+2026-01-22T13:59:57.181929 tid13152 [dbg,dev:COM7] Read <- (hex) 15 04 0e 00 81 21
+2026-01-22T13:59:57.181954 tid13152 [dbg,dev:COM7] Read <- (hex) 01 00 00 00 00 00 0d 00 00 00 4a 0c 02 00
+2026-01-22T13:59:57.181961 tid13152 [IFO,Core] Did initialize device XYStage
+2026-01-22T13:59:57.192191 tid16076 [dbg,dev:COM6] GetAnswer <- 625.000000\r\n
+2026-01-22T13:59:57.192205 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.222502 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.222533 tid16076 [dbg,dev:COM6] SetCommand -> fb? 0\r\n
+2026-01-22T13:59:57.268527 tid16076 [dbg,dev:COM6] GetAnswer <- 2.200000\r\n
+2026-01-22T13:59:57.268546 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.300355 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.300384 tid16076 [dbg,dev:COM6] SetCommand -> hs? 0\r\n
+2026-01-22T13:59:57.329757 tid16076 [dbg,dev:COM6] GetAnswer <- M00536580\r\n
+2026-01-22T13:59:57.329775 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.359268 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.359303 tid16076 [dbg,dev:COM6] SetCommand -> wl? 1\r\n
+2026-01-22T13:59:57.389051 tid16076 [dbg,dev:COM6] GetAnswer <- 385.000000\r\n
+2026-01-22T13:59:57.389071 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.419139 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.419170 tid16076 [dbg,dev:COM6] SetCommand -> fb? 1\r\n
+2026-01-22T13:59:57.449339 tid16076 [dbg,dev:COM6] GetAnswer <- 4.300000\r\n
+2026-01-22T13:59:57.449358 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.480863 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.480894 tid16076 [dbg,dev:COM6] SetCommand -> hs? 1\r\n
+2026-01-22T13:59:57.511017 tid16076 [dbg,dev:COM6] GetAnswer <- M00536580\r\n
+2026-01-22T13:59:57.511036 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.541348 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.541379 tid16076 [dbg,dev:COM6] SetCommand -> wl? 2\r\n
+2026-01-22T13:59:57.571814 tid16076 [dbg,dev:COM6] GetAnswer <- 565.000000\r\n
+2026-01-22T13:59:57.571832 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.601779 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.601808 tid16076 [dbg,dev:COM6] SetCommand -> fb? 2\r\n
+2026-01-22T13:59:57.633125 tid16076 [dbg,dev:COM6] GetAnswer <- 2.750000\r\n
+2026-01-22T13:59:57.633144 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.663020 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.663054 tid16076 [dbg,dev:COM6] SetCommand -> hs? 2\r\n
+2026-01-22T13:59:57.692482 tid16076 [dbg,dev:COM6] GetAnswer <- M00536580\r\n
+2026-01-22T13:59:57.692500 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.722800 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.722827 tid16076 [dbg,dev:COM6] SetCommand -> wl? 3\r\n
+2026-01-22T13:59:57.752718 tid16076 [dbg,dev:COM6] GetAnswer <- 470.000000\r\n
+2026-01-22T13:59:57.752734 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.782676 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.782705 tid16076 [dbg,dev:COM6] SetCommand -> fb? 3\r\n
+2026-01-22T13:59:57.813692 tid16076 [dbg,dev:COM6] GetAnswer <- 3.200000\r\n
+2026-01-22T13:59:57.813710 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.844069 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.844099 tid16076 [dbg,dev:COM6] SetCommand -> hs? 3\r\n
+2026-01-22T13:59:57.874640 tid16076 [dbg,dev:COM6] GetAnswer <- M00536580\r\n
+2026-01-22T13:59:57.874658 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.904101 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.904155 tid16076 [dbg,dev:COM6] SetCommand -> sm?\r\n
+2026-01-22T13:59:57.935775 tid16076 [dbg,dev:COM6] GetAnswer <- 0\r\n
+2026-01-22T13:59:57.935793 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.966474 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.966500 tid16076 [dbg,dev:COM6] SetCommand -> o -1 0\r\n
+2026-01-22T13:59:57.966504 tid16076 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:57.997480 tid16076 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:57.997497 tid16076 [IFO,dev:Thorlabs DC4100] DC4100 - initializied S/N: M00532685 Rev: 1.2.0
+2026-01-22T13:59:57.997501 tid16076 [IFO,Core] Did initialize device Thorlabs DC4100
+2026-01-22T13:59:58.944243 tid13528 [dbg,dev:COM4] Write -> (hex) 1e
+2026-01-22T13:59:58.976154 tid13528 [dbg,dev:COM4] GetAnswer <- MM-Ard\r\n
+2026-01-22T13:59:58.976181 tid13528 [dbg,dev:COM4] Write -> (hex) 1f
+2026-01-22T13:59:59.006076 tid13528 [dbg,dev:COM4] GetAnswer <- 2\r\n
+2026-01-22T13:59:59.006099 tid13528 [IFO,Core] Did initialize device Arduino-Hub
+2026-01-22T13:59:59.006101 tid13528 [IFO,Core] Will initialize device Arduino-Shutter
+2026-01-22T13:59:59.006121 tid13528 [IFO,Core] Did initialize device Arduino-Shutter
+2026-01-22T13:59:59.006122 tid13528 [IFO,Core] Will initialize device Arduino-Switch
+2026-01-22T13:59:59.006249 tid13528 [IFO,Core] Did initialize device Arduino-Switch
+2026-01-22T13:59:59.262665 tid16260 [IFO,Core] Did initialize device ORCA-Fusion
+2026-01-22T13:59:59.262725 tid14064 [IFO,Core] Default xy stage set to XYStage
+2026-01-22T13:59:59.262728 tid14064 [IFO,Core] Default camera set to ORCA-Fusion
+2026-01-22T13:59:59.262730 tid14064 [IFO,Core] Default shutter set to Thorlabs DC4100
+2026-01-22T13:59:59.262733 tid14064 [IFO,Core] Default shutter set to Arduino-Shutter
+2026-01-22T13:59:59.262736 tid14064 [IFO,Core] Finished initializing 9 devices
+2026-01-22T13:59:59.262773 tid14064 [dbg,App] Notification for Device: Core Property: Initialize changed to value: 1
+2026-01-22T13:59:59.262775 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T13:59:59.262780 tid14064 [dbg,Core] Did set Core property: Initialize = 1
+2026-01-22T13:59:59.262790 tid14064 [dbg,Core] Will set Core property: Camera = ORCA-Fusion
+2026-01-22T13:59:59.262793 tid14064 [IFO,Core] Default camera set to ORCA-Fusion
+2026-01-22T13:59:59.262797 tid14064 [dbg,App] Notification for Device: Core Property: Camera changed to value: ORCA-Fusion
+2026-01-22T13:59:59.262797 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T13:59:59.262799 tid14064 [dbg,Core] Did set Core property: Camera = ORCA-Fusion
+2026-01-22T13:59:59.262802 tid14064 [dbg,Core] Will set Core property: Shutter = Arduino-Shutter
+2026-01-22T13:59:59.262805 tid14064 [dbg,App] Notification for Device: Core Property: Shutter changed to value: Arduino-Shutter
+2026-01-22T13:59:59.262806 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T13:59:59.262820 tid14064 [dbg,Core] Did set Core property: Shutter = Arduino-Shutter
+2026-01-22T13:59:59.262822 tid14064 [dbg,Core] Will set Core property: AutoShutter = 1
+2026-01-22T13:59:59.262825 tid14064 [dbg,Core] Autoshutter turned on
+2026-01-22T13:59:59.262827 tid14064 [dbg,App] Notification for Device: Core Property: AutoShutter changed to value: 1
+2026-01-22T13:59:59.262828 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T13:59:59.262830 tid14064 [dbg,Core] Did set Core property: AutoShutter = 1
+2026-01-22T13:59:59.262876 tid14064 [dbg,Core] Defined label 63 for device Arduino-Switch state 63
+2026-01-22T13:59:59.262895 tid14064 [dbg,Core] Defined label 62 for device Arduino-Switch state 62
+2026-01-22T13:59:59.262911 tid14064 [dbg,Core] Defined label 61 for device Arduino-Switch state 61
+2026-01-22T13:59:59.262927 tid14064 [dbg,Core] Defined label 60 for device Arduino-Switch state 60
+2026-01-22T13:59:59.262941 tid14064 [dbg,Core] Defined label 59 for device Arduino-Switch state 59
+2026-01-22T13:59:59.262956 tid14064 [dbg,Core] Defined label 58 for device Arduino-Switch state 58
+2026-01-22T13:59:59.262970 tid14064 [dbg,Core] Defined label 57 for device Arduino-Switch state 57
+2026-01-22T13:59:59.262985 tid14064 [dbg,Core] Defined label 56 for device Arduino-Switch state 56
+2026-01-22T13:59:59.262999 tid14064 [dbg,Core] Defined label 55 for device Arduino-Switch state 55
+2026-01-22T13:59:59.263013 tid14064 [dbg,Core] Defined label 54 for device Arduino-Switch state 54
+2026-01-22T13:59:59.263027 tid14064 [dbg,Core] Defined label 53 for device Arduino-Switch state 53
+2026-01-22T13:59:59.263041 tid14064 [dbg,Core] Defined label 52 for device Arduino-Switch state 52
+2026-01-22T13:59:59.263055 tid14064 [dbg,Core] Defined label 51 for device Arduino-Switch state 51
+2026-01-22T13:59:59.263069 tid14064 [dbg,Core] Defined label 50 for device Arduino-Switch state 50
+2026-01-22T13:59:59.263083 tid14064 [dbg,Core] Defined label 49 for device Arduino-Switch state 49
+2026-01-22T13:59:59.263097 tid14064 [dbg,Core] Defined label 48 for device Arduino-Switch state 48
+2026-01-22T13:59:59.263111 tid14064 [dbg,Core] Defined label 47 for device Arduino-Switch state 47
+2026-01-22T13:59:59.263125 tid14064 [dbg,Core] Defined label 46 for device Arduino-Switch state 46
+2026-01-22T13:59:59.263139 tid14064 [dbg,Core] Defined label 45 for device Arduino-Switch state 45
+2026-01-22T13:59:59.263153 tid14064 [dbg,Core] Defined label 44 for device Arduino-Switch state 44
+2026-01-22T13:59:59.263167 tid14064 [dbg,Core] Defined label 43 for device Arduino-Switch state 43
+2026-01-22T13:59:59.263180 tid14064 [dbg,Core] Defined label 42 for device Arduino-Switch state 42
+2026-01-22T13:59:59.263194 tid14064 [dbg,Core] Defined label 41 for device Arduino-Switch state 41
+2026-01-22T13:59:59.263208 tid14064 [dbg,Core] Defined label 40 for device Arduino-Switch state 40
+2026-01-22T13:59:59.263228 tid14064 [dbg,Core] Defined label 39 for device Arduino-Switch state 39
+2026-01-22T13:59:59.263243 tid14064 [dbg,Core] Defined label 38 for device Arduino-Switch state 38
+2026-01-22T13:59:59.263257 tid14064 [dbg,Core] Defined label 37 for device Arduino-Switch state 37
+2026-01-22T13:59:59.263271 tid14064 [dbg,Core] Defined label 36 for device Arduino-Switch state 36
+2026-01-22T13:59:59.263286 tid14064 [dbg,Core] Defined label 35 for device Arduino-Switch state 35
+2026-01-22T13:59:59.263300 tid14064 [dbg,Core] Defined label 34 for device Arduino-Switch state 34
+2026-01-22T13:59:59.263314 tid14064 [dbg,Core] Defined label 33 for device Arduino-Switch state 33
+2026-01-22T13:59:59.263328 tid14064 [dbg,Core] Defined label 32 for device Arduino-Switch state 32
+2026-01-22T13:59:59.263341 tid14064 [dbg,Core] Defined label 31 for device Arduino-Switch state 31
+2026-01-22T13:59:59.263355 tid14064 [dbg,Core] Defined label 30 for device Arduino-Switch state 30
+2026-01-22T13:59:59.263369 tid14064 [dbg,Core] Defined label 29 for device Arduino-Switch state 29
+2026-01-22T13:59:59.263383 tid14064 [dbg,Core] Defined label 28 for device Arduino-Switch state 28
+2026-01-22T13:59:59.263397 tid14064 [dbg,Core] Defined label 27 for device Arduino-Switch state 27
+2026-01-22T13:59:59.263412 tid14064 [dbg,Core] Defined label 26 for device Arduino-Switch state 26
+2026-01-22T13:59:59.263426 tid14064 [dbg,Core] Defined label 25 for device Arduino-Switch state 25
+2026-01-22T13:59:59.263441 tid14064 [dbg,Core] Defined label 24 for device Arduino-Switch state 24
+2026-01-22T13:59:59.263455 tid14064 [dbg,Core] Defined label 23 for device Arduino-Switch state 23
+2026-01-22T13:59:59.263470 tid14064 [dbg,Core] Defined label 22 for device Arduino-Switch state 22
+2026-01-22T13:59:59.263484 tid14064 [dbg,Core] Defined label 21 for device Arduino-Switch state 21
+2026-01-22T13:59:59.263498 tid14064 [dbg,Core] Defined label 20 for device Arduino-Switch state 20
+2026-01-22T13:59:59.263512 tid14064 [dbg,Core] Defined label 19 for device Arduino-Switch state 19
+2026-01-22T13:59:59.263526 tid14064 [dbg,Core] Defined label 18 for device Arduino-Switch state 18
+2026-01-22T13:59:59.263541 tid14064 [dbg,Core] Defined label 17 for device Arduino-Switch state 17
+2026-01-22T13:59:59.263555 tid14064 [dbg,Core] Defined label 16 for device Arduino-Switch state 16
+2026-01-22T13:59:59.263569 tid14064 [dbg,Core] Defined label 15 for device Arduino-Switch state 15
+2026-01-22T13:59:59.263583 tid14064 [dbg,Core] Defined label 14 for device Arduino-Switch state 14
+2026-01-22T13:59:59.263597 tid14064 [dbg,Core] Defined label 13 for device Arduino-Switch state 13
+2026-01-22T13:59:59.263611 tid14064 [dbg,Core] Defined label 12 for device Arduino-Switch state 12
+2026-01-22T13:59:59.263625 tid14064 [dbg,Core] Defined label 11 for device Arduino-Switch state 11
+2026-01-22T13:59:59.263639 tid14064 [dbg,Core] Defined label 10 for device Arduino-Switch state 10
+2026-01-22T13:59:59.263655 tid14064 [dbg,Core] Defined label 9 for device Arduino-Switch state 9
+2026-01-22T13:59:59.263670 tid14064 [dbg,Core] Defined label 8 for device Arduino-Switch state 8
+2026-01-22T13:59:59.263685 tid14064 [dbg,Core] Defined label 7 for device Arduino-Switch state 7
+2026-01-22T13:59:59.263700 tid14064 [dbg,Core] Defined label 6 for device Arduino-Switch state 6
+2026-01-22T13:59:59.263714 tid14064 [dbg,Core] Defined label 5 for device Arduino-Switch state 5
+2026-01-22T13:59:59.263729 tid14064 [dbg,Core] Defined label 4 for device Arduino-Switch state 4
+2026-01-22T13:59:59.263743 tid14064 [dbg,Core] Defined label 3 for device Arduino-Switch state 3
+2026-01-22T13:59:59.263758 tid14064 [dbg,Core] Defined label 2 for device Arduino-Switch state 2
+2026-01-22T13:59:59.263773 tid14064 [dbg,Core] Defined label LEDD1B for device Arduino-Switch state 1
+2026-01-22T13:59:59.263788 tid14064 [dbg,Core] Defined label 0 for device Arduino-Switch state 0
+2026-01-22T13:59:59.263800 tid14064 [dbg,Core] Config group 625 nm: preset NewPreset: added setting Thorlabs DC4100-Percental Brightness LED-1 = 58
+2026-01-22T13:59:59.263812 tid14064 [dbg,Core] Config group Camera scan mode: preset Standard: added setting ORCA-Fusion-ScanMode = 2
+2026-01-22T13:59:59.263818 tid14064 [dbg,Core] Config group Camera scan mode: preset Fast: added setting ORCA-Fusion-ScanMode = 3
+2026-01-22T13:59:59.263848 tid14064 [dbg,Core] Config group Camera scan mode: preset Ultra quiet: added setting ORCA-Fusion-ScanMode = 1
+2026-01-22T13:59:59.263858 tid14064 [dbg,Core] Config group Channel: preset A647: added setting Thorlabs DC4100-Percental Brightness LED-1 = 100
+2026-01-22T13:59:59.263864 tid14064 [dbg,Core] Config group Channel: preset A647: added setting Thorlabs DC4100-Percental Brightness LED-2 = 0
+2026-01-22T13:59:59.263869 tid14064 [dbg,Core] Config group Channel: preset A647: added setting Thorlabs DC4100-Percental Brightness LED-3 = 0
+2026-01-22T13:59:59.263873 tid14064 [dbg,Core] Config group Channel: preset A647: added setting Thorlabs DC4100-Percental Brightness LED-4 = 0
+2026-01-22T13:59:59.263879 tid14064 [dbg,Core] Config group Channel: preset A647: added setting Core-Shutter = Thorlabs DC4100
+2026-01-22T13:59:59.263884 tid14064 [dbg,Core] Config group Channel: preset mCherry: added setting Thorlabs DC4100-Percental Brightness LED-1 = 0
+2026-01-22T13:59:59.263889 tid14064 [dbg,Core] Config group Channel: preset mCherry: added setting Thorlabs DC4100-Percental Brightness LED-2 = 0
+2026-01-22T13:59:59.263894 tid14064 [dbg,Core] Config group Channel: preset mCherry: added setting Thorlabs DC4100-Percental Brightness LED-3 = 100
+2026-01-22T13:59:59.263898 tid14064 [dbg,Core] Config group Channel: preset mCherry: added setting Thorlabs DC4100-Percental Brightness LED-4 = 0
+2026-01-22T13:59:59.263903 tid14064 [dbg,Core] Config group Channel: preset mCherry: added setting Core-Shutter = Thorlabs DC4100
+2026-01-22T13:59:59.263908 tid14064 [dbg,Core] Config group Channel: preset DIC: added setting Thorlabs DC4100-Percental Brightness LED-1 = 0
+2026-01-22T13:59:59.263912 tid14064 [dbg,Core] Config group Channel: preset DIC: added setting Thorlabs DC4100-Percental Brightness LED-2 = 0
+2026-01-22T13:59:59.263916 tid14064 [dbg,Core] Config group Channel: preset DIC: added setting Thorlabs DC4100-Percental Brightness LED-3 = 0
+2026-01-22T13:59:59.263920 tid14064 [dbg,Core] Config group Channel: preset DIC: added setting Thorlabs DC4100-Percental Brightness LED-4 = 0
+2026-01-22T13:59:59.263927 tid14064 [dbg,Core] Config group Channel: preset DIC: added setting Core-Shutter = Arduino-Shutter
+2026-01-22T13:59:59.263931 tid14064 [dbg,Core] Config group Channel: preset GFP: added setting Thorlabs DC4100-Percental Brightness LED-1 = 0
+2026-01-22T13:59:59.263936 tid14064 [dbg,Core] Config group Channel: preset GFP: added setting Thorlabs DC4100-Percental Brightness LED-2 = 0
+2026-01-22T13:59:59.263940 tid14064 [dbg,Core] Config group Channel: preset GFP: added setting Thorlabs DC4100-Percental Brightness LED-3 = 0
+2026-01-22T13:59:59.263945 tid14064 [dbg,Core] Config group Channel: preset GFP: added setting Thorlabs DC4100-Percental Brightness LED-4 = 100
+2026-01-22T13:59:59.263949 tid14064 [dbg,Core] Config group Channel: preset GFP: added setting Core-Shutter = Thorlabs DC4100
+2026-01-22T13:59:59.263954 tid14064 [dbg,Core] Config group Channel: preset DAPI: added setting Thorlabs DC4100-Percental Brightness LED-1 = 0
+2026-01-22T13:59:59.263958 tid14064 [dbg,Core] Config group Channel: preset DAPI: added setting Thorlabs DC4100-Percental Brightness LED-2 = 100
+2026-01-22T13:59:59.263963 tid14064 [dbg,Core] Config group Channel: preset DAPI: added setting Thorlabs DC4100-Percental Brightness LED-3 = 0
+2026-01-22T13:59:59.263967 tid14064 [dbg,Core] Config group Channel: preset DAPI: added setting Thorlabs DC4100-Percental Brightness LED-4 = 0
+2026-01-22T13:59:59.263972 tid14064 [dbg,Core] Config group Channel: preset DAPI: added setting Core-Shutter = Thorlabs DC4100
+2026-01-22T13:59:59.263980 tid14064 [dbg,Core] Config group System: preset Startup: added setting ORCA-Fusion-ScanMode = 1
+2026-01-22T13:59:59.263984 tid14064 [dbg,Core] Config group System: preset Startup: added setting Arduino-Switch-Label = LEDD1B
+2026-01-22T13:59:59.263993 tid14064 [dbg,Core] Config group Arduino Switch: preset 29: added setting Arduino-Switch-Label = 29
+2026-01-22T13:59:59.263998 tid14064 [dbg,Core] Config group Arduino Switch: preset 28: added setting Arduino-Switch-Label = 28
+2026-01-22T13:59:59.264003 tid14064 [dbg,Core] Config group Arduino Switch: preset 27: added setting Arduino-Switch-Label = 27
+2026-01-22T13:59:59.264007 tid14064 [dbg,Core] Config group Arduino Switch: preset 59: added setting Arduino-Switch-Label = 59
+2026-01-22T13:59:59.264011 tid14064 [dbg,Core] Config group Arduino Switch: preset 26: added setting Arduino-Switch-Label = 26
+2026-01-22T13:59:59.264016 tid14064 [dbg,Core] Config group Arduino Switch: preset 58: added setting Arduino-Switch-Label = 58
+2026-01-22T13:59:59.264020 tid14064 [dbg,Core] Config group Arduino Switch: preset 25: added setting Arduino-Switch-Label = 25
+2026-01-22T13:59:59.264024 tid14064 [dbg,Core] Config group Arduino Switch: preset 57: added setting Arduino-Switch-Label = 57
+2026-01-22T13:59:59.264029 tid14064 [dbg,Core] Config group Arduino Switch: preset 24: added setting Arduino-Switch-Label = 24
+2026-01-22T13:59:59.264033 tid14064 [dbg,Core] Config group Arduino Switch: preset 56: added setting Arduino-Switch-Label = 56
+2026-01-22T13:59:59.264038 tid14064 [dbg,Core] Config group Arduino Switch: preset 23: added setting Arduino-Switch-Label = 23
+2026-01-22T13:59:59.264042 tid14064 [dbg,Core] Config group Arduino Switch: preset 55: added setting Arduino-Switch-Label = 55
+2026-01-22T13:59:59.264046 tid14064 [dbg,Core] Config group Arduino Switch: preset 22: added setting Arduino-Switch-Label = 22
+2026-01-22T13:59:59.264051 tid14064 [dbg,Core] Config group Arduino Switch: preset 54: added setting Arduino-Switch-Label = 54
+2026-01-22T13:59:59.264055 tid14064 [dbg,Core] Config group Arduino Switch: preset 21: added setting Arduino-Switch-Label = 21
+2026-01-22T13:59:59.264059 tid14064 [dbg,Core] Config group Arduino Switch: preset 53: added setting Arduino-Switch-Label = 53
+2026-01-22T13:59:59.264064 tid14064 [dbg,Core] Config group Arduino Switch: preset 20: added setting Arduino-Switch-Label = 20
+2026-01-22T13:59:59.264068 tid14064 [dbg,Core] Config group Arduino Switch: preset 52: added setting Arduino-Switch-Label = 52
+2026-01-22T13:59:59.264072 tid14064 [dbg,Core] Config group Arduino Switch: preset 51: added setting Arduino-Switch-Label = 51
+2026-01-22T13:59:59.264077 tid14064 [dbg,Core] Config group Arduino Switch: preset 50: added setting Arduino-Switch-Label = 50
+2026-01-22T13:59:59.264081 tid14064 [dbg,Core] Config group Arduino Switch: preset 9: added setting Arduino-Switch-Label = 9
+2026-01-22T13:59:59.264086 tid14064 [dbg,Core] Config group Arduino Switch: preset 8: added setting Arduino-Switch-Label = 8
+2026-01-22T13:59:59.264090 tid14064 [dbg,Core] Config group Arduino Switch: preset 19: added setting Arduino-Switch-Label = 19
+2026-01-22T13:59:59.264095 tid14064 [dbg,Core] Config group Arduino Switch: preset 7: added setting Arduino-Switch-Label = 7
+2026-01-22T13:59:59.264099 tid14064 [dbg,Core] Config group Arduino Switch: preset 18: added setting Arduino-Switch-Label = 18
+2026-01-22T13:59:59.264133 tid14064 [dbg,Core] Config group Arduino Switch: preset 6: added setting Arduino-Switch-Label = 6
+2026-01-22T13:59:59.264138 tid14064 [dbg,Core] Config group Arduino Switch: preset 17: added setting Arduino-Switch-Label = 17
+2026-01-22T13:59:59.264142 tid14064 [dbg,Core] Config group Arduino Switch: preset 49: added setting Arduino-Switch-Label = 49
+2026-01-22T13:59:59.264158 tid14064 [dbg,Core] Config group Arduino Switch: preset 5: added setting Arduino-Switch-Label = 5
+2026-01-22T13:59:59.264163 tid14064 [dbg,Core] Config group Arduino Switch: preset 16: added setting Arduino-Switch-Label = 16
+2026-01-22T13:59:59.264175 tid14064 [dbg,Core] Config group Arduino Switch: preset 48: added setting Arduino-Switch-Label = 48
+2026-01-22T13:59:59.264181 tid14064 [dbg,Core] Config group Arduino Switch: preset 4: added setting Arduino-Switch-Label = 4
+2026-01-22T13:59:59.264185 tid14064 [dbg,Core] Config group Arduino Switch: preset 15: added setting Arduino-Switch-Label = 15
+2026-01-22T13:59:59.264190 tid14064 [dbg,Core] Config group Arduino Switch: preset 47: added setting Arduino-Switch-Label = 47
+2026-01-22T13:59:59.264194 tid14064 [dbg,Core] Config group Arduino Switch: preset 14: added setting Arduino-Switch-Label = 14
+2026-01-22T13:59:59.264199 tid14064 [dbg,Core] Config group Arduino Switch: preset 3: added setting Arduino-Switch-Label = 3
+2026-01-22T13:59:59.264203 tid14064 [dbg,Core] Config group Arduino Switch: preset 46: added setting Arduino-Switch-Label = 46
+2026-01-22T13:59:59.264208 tid14064 [dbg,Core] Config group Arduino Switch: preset 13: added setting Arduino-Switch-Label = 13
+2026-01-22T13:59:59.264212 tid14064 [dbg,Core] Config group Arduino Switch: preset 2: added setting Arduino-Switch-Label = 2
+2026-01-22T13:59:59.264217 tid14064 [dbg,Core] Config group Arduino Switch: preset 45: added setting Arduino-Switch-Label = 45
+2026-01-22T13:59:59.264221 tid14064 [dbg,Core] Config group Arduino Switch: preset 12: added setting Arduino-Switch-Label = 12
+2026-01-22T13:59:59.264226 tid14064 [dbg,Core] Config group Arduino Switch: preset 44: added setting Arduino-Switch-Label = 44
+2026-01-22T13:59:59.264230 tid14064 [dbg,Core] Config group Arduino Switch: preset 11: added setting Arduino-Switch-Label = 11
+2026-01-22T13:59:59.264234 tid14064 [dbg,Core] Config group Arduino Switch: preset 0: added setting Arduino-Switch-Label = 0
+2026-01-22T13:59:59.264239 tid14064 [dbg,Core] Config group Arduino Switch: preset 43: added setting Arduino-Switch-Label = 43
+2026-01-22T13:59:59.264244 tid14064 [dbg,Core] Config group Arduino Switch: preset 10: added setting Arduino-Switch-Label = 10
+2026-01-22T13:59:59.264248 tid14064 [dbg,Core] Config group Arduino Switch: preset 42: added setting Arduino-Switch-Label = 42
+2026-01-22T13:59:59.264252 tid14064 [dbg,Core] Config group Arduino Switch: preset 41: added setting Arduino-Switch-Label = 41
+2026-01-22T13:59:59.264257 tid14064 [dbg,Core] Config group Arduino Switch: preset 40: added setting Arduino-Switch-Label = 40
+2026-01-22T13:59:59.264262 tid14064 [dbg,Core] Config group Arduino Switch: preset LEDD1B: added setting Arduino-Switch-Label = LEDD1B
+2026-01-22T13:59:59.264266 tid14064 [dbg,Core] Config group Arduino Switch: preset 39: added setting Arduino-Switch-Label = 39
+2026-01-22T13:59:59.264271 tid14064 [dbg,Core] Config group Arduino Switch: preset 38: added setting Arduino-Switch-Label = 38
+2026-01-22T13:59:59.264275 tid14064 [dbg,Core] Config group Arduino Switch: preset 37: added setting Arduino-Switch-Label = 37
+2026-01-22T13:59:59.264279 tid14064 [dbg,Core] Config group Arduino Switch: preset 36: added setting Arduino-Switch-Label = 36
+2026-01-22T13:59:59.264285 tid14064 [dbg,Core] Config group Arduino Switch: preset 35: added setting Arduino-Switch-Label = 35
+2026-01-22T13:59:59.264290 tid14064 [dbg,Core] Config group Arduino Switch: preset 34: added setting Arduino-Switch-Label = 34
+2026-01-22T13:59:59.264294 tid14064 [dbg,Core] Config group Arduino Switch: preset 33: added setting Arduino-Switch-Label = 33
+2026-01-22T13:59:59.264298 tid14064 [dbg,Core] Config group Arduino Switch: preset 32: added setting Arduino-Switch-Label = 32
+2026-01-22T13:59:59.264303 tid14064 [dbg,Core] Config group Arduino Switch: preset 31: added setting Arduino-Switch-Label = 31
+2026-01-22T13:59:59.264307 tid14064 [dbg,Core] Config group Arduino Switch: preset 63: added setting Arduino-Switch-Label = 63
+2026-01-22T13:59:59.264312 tid14064 [dbg,Core] Config group Arduino Switch: preset 30: added setting Arduino-Switch-Label = 30
+2026-01-22T13:59:59.264316 tid14064 [dbg,Core] Config group Arduino Switch: preset 62: added setting Arduino-Switch-Label = 62
+2026-01-22T13:59:59.264321 tid14064 [dbg,Core] Config group Arduino Switch: preset 61: added setting Arduino-Switch-Label = 61
+2026-01-22T13:59:59.264326 tid14064 [dbg,Core] Config group Arduino Switch: preset 60: added setting Arduino-Switch-Label = 60
+2026-01-22T13:59:59.264335 tid14064 [dbg,Core] Config group 470 nm: preset NewPreset: added setting Thorlabs DC4100-Percental Brightness LED-4 = 33
+2026-01-22T13:59:59.264345 tid14064 [dbg,Core] Config group 565 nm: preset NewPreset: added setting Thorlabs DC4100-Percental Brightness LED-3 = 30
+2026-01-22T13:59:59.264353 tid14064 [dbg,Core] Config group 385 nm: preset NewPreset: added setting Thorlabs DC4100-Percental Brightness LED-2 = 31
+2026-01-22T13:59:59.264363 tid14064 [dbg,Core] Config group Camera bit depth: preset 8bit: added setting ORCA-Fusion-PixelType = 8bit
+2026-01-22T13:59:59.264369 tid14064 [dbg,Core] Config group Camera bit depth: preset 16bit: added setting ORCA-Fusion-PixelType = 16bit
+2026-01-22T13:59:59.264374 tid14064 [dbg,Core] Config group Camera bit depth: preset 12bit: added setting ORCA-Fusion-PixelType = 12bit
+2026-01-22T13:59:59.264381 tid14064 [dbg,Core] Pixel size config: preset 60X W: added setting : Core-XYStage = XYStage
+2026-01-22T13:59:59.264391 tid14064 [dbg,Core] Pixel size config: preset 60X W: set resolution to 0.10910 um/px
+2026-01-22T13:59:59.264400 tid14064 [dbg,Core] Pixel size config: preset 60X W: set affine matrix to 0.10910, 0.00000, 0.00000, 0.00000, 0.10910, 0.00000
+2026-01-22T13:59:59.264409 tid14064 [dbg,Core] Waiting for device COM6...
+2026-01-22T13:59:59.264411 tid14064 [dbg,Core] Finished waiting for device COM6
+2026-01-22T13:59:59.264412 tid14064 [dbg,Core] Waiting for device COM7...
+2026-01-22T13:59:59.264413 tid14064 [dbg,Core] Finished waiting for device COM7
+2026-01-22T13:59:59.264413 tid14064 [dbg,Core] Waiting for device COM4...
+2026-01-22T13:59:59.264414 tid14064 [dbg,Core] Finished waiting for device COM4
+2026-01-22T13:59:59.264415 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T13:59:59.264417 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T13:59:59.264418 tid14064 [dbg,Core] Waiting for device Thorlabs DC4100...
+2026-01-22T13:59:59.264419 tid14064 [dbg,Core] Finished waiting for device Thorlabs DC4100
+2026-01-22T13:59:59.264420 tid14064 [dbg,Core] Waiting for device Arduino-Hub...
+2026-01-22T13:59:59.264421 tid14064 [dbg,Core] Finished waiting for device Arduino-Hub
+2026-01-22T13:59:59.264422 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T13:59:59.264423 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T13:59:59.264424 tid14064 [dbg,Core] Waiting for device Arduino-Switch...
+2026-01-22T13:59:59.264425 tid14064 [dbg,Core] Finished waiting for device Arduino-Switch
+2026-01-22T13:59:59.264426 tid14064 [dbg,Core] Waiting for device XYStage...
+2026-01-22T13:59:59.264428 tid14064 [dbg,Core] Finished waiting for device XYStage
+2026-01-22T13:59:59.264428 tid14064 [dbg,Core] Will update system state cache
+2026-01-22T13:59:59.264974 tid14064 [dbg,dev:COM6] SetCommand -> cc? 0\r\n
+2026-01-22T13:59:59.294226 tid14064 [dbg,dev:COM6] GetAnswer <- 55\r\n
+2026-01-22T13:59:59.294243 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.325024 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.325060 tid14064 [dbg,dev:COM6] SetCommand -> cc? 1\r\n
+2026-01-22T13:59:59.353855 tid14064 [dbg,dev:COM6] GetAnswer <- 700\r\n
+2026-01-22T13:59:59.353872 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.385732 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.385762 tid14064 [dbg,dev:COM6] SetCommand -> cc? 2\r\n
+2026-01-22T13:59:59.414941 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.414962 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.444582 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.444621 tid14064 [dbg,dev:COM6] SetCommand -> cc? 3\r\n
+2026-01-22T13:59:59.475252 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.475268 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.505458 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.505513 tid14064 [dbg,dev:COM6] SetCommand -> l? 0\r\n
+2026-01-22T13:59:59.535159 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.535182 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.566521 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.566575 tid14064 [dbg,dev:COM6] SetCommand -> l? 1\r\n
+2026-01-22T13:59:59.597238 tid14064 [dbg,dev:COM6] GetAnswer <- 700\r\n
+2026-01-22T13:59:59.597256 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.626266 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.626314 tid14064 [dbg,dev:COM6] SetCommand -> l? 2\r\n
+2026-01-22T13:59:59.656031 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.656053 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.687090 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.687128 tid14064 [dbg,dev:COM6] SetCommand -> l? 3\r\n
+2026-01-22T13:59:59.718328 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.718345 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.748432 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.748471 tid14064 [dbg,dev:COM6] SetCommand -> ml? 0\r\n
+2026-01-22T13:59:59.779159 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.779177 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.809493 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.809534 tid14064 [dbg,dev:COM6] SetCommand -> ml? 1\r\n
+2026-01-22T13:59:59.838960 tid14064 [dbg,dev:COM6] GetAnswer <- 700\r\n
+2026-01-22T13:59:59.838978 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.870397 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.870433 tid14064 [dbg,dev:COM6] SetCommand -> ml? 2\r\n
+2026-01-22T13:59:59.900576 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.900594 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.930923 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.930961 tid14064 [dbg,dev:COM6] SetCommand -> ml? 3\r\n
+2026-01-22T13:59:59.960357 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T13:59:59.960374 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T13:59:59.990308 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T13:59:59.990350 tid14064 [dbg,dev:COM6] SetCommand -> m?\r\n
+2026-01-22T14:00:00.020906 tid14064 [dbg,dev:COM6] GetAnswer <- 1\r\n
+2026-01-22T14:00:00.020930 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:00.052100 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:00.052133 tid14064 [dbg,dev:COM6] SetCommand -> bp? 0\r\n
+2026-01-22T14:00:00.081990 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:00.082006 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:00.112009 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:00.112060 tid14064 [dbg,dev:COM6] SetCommand -> bp? 1\r\n
+2026-01-22T14:00:00.143038 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:00.143052 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:00.173224 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:00.173280 tid14064 [dbg,dev:COM6] SetCommand -> bp? 2\r\n
+2026-01-22T14:00:00.202758 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:00.202775 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:00.233383 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:00.233433 tid14064 [dbg,dev:COM6] SetCommand -> bp? 3\r\n
+2026-01-22T14:00:00.263323 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:00.263337 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:00.295040 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:00.295094 tid14064 [dbg,dev:COM6] SetCommand -> r?\n
+2026-01-22T14:00:00.325271 tid14064 [dbg,dev:COM6] GetAnswer <- 0\r\n
+2026-01-22T14:00:00.325289 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:00.355202 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:00.355365 tid14064 [dbg,dev:COM7] Write -> (hex) 14 04 01 00 21 01
+2026-01-22T14:00:00.384763 tid14064 [dbg,dev:COM7] Read <- (hex) 15 04 0e 00 81 21
+2026-01-22T14:00:00.384792 tid14064 [dbg,dev:COM7] Read <- (hex) 01 00 00 00 00 00 0d 00 00 00 4a 0c 02 00
+2026-01-22T14:00:00.384827 tid14064 [dbg,dev:COM7] Write -> (hex) 14 04 01 00 21 01
+2026-01-22T14:00:00.414974 tid14064 [dbg,dev:COM7] Read <- (hex) 15 04 0e 00 81 21
+2026-01-22T14:00:00.414999 tid14064 [dbg,dev:COM7] Read <- (hex) 01 00 00 00 00 00 0d 00 00 00 4a 0c 02 00
+2026-01-22T14:00:00.415118 tid14064 [IFO,Core] Did update system state cache
+2026-01-22T14:00:00.415139 tid14064 [dbg,Core] Config group System: will apply preset Startup
+2026-01-22T14:00:00.415145 tid14064 [dbg,Core:dev:ORCA-Fusion] Will set property "ScanMode" to "1"
+2026-01-22T14:00:00.501133 tid14064 [IFO,dev:ORCA-Fusion] Device adapter requests invalid values ( 0, 0) for property: ReadoutTime
+2026-01-22T14:00:00.501178 tid14064 [IFO,dev:ORCA-Fusion] Device adapter requests invalid values ( 0.08125, 0.08125) for property: INTERNAL LINE SPEED
+2026-01-22T14:00:00.501195 tid14064 [IFO,dev:ORCA-Fusion] Device adapter requests invalid values ( 0.08, 0.08) for property: INTERNAL LINE INTERVAL
+2026-01-22T14:00:01.460793 tid14064 [dbg,Core:dev:ORCA-Fusion] Did set property "ScanMode" to "1"
+2026-01-22T14:00:01.460832 tid14064 [dbg,Core:dev:Arduino-Switch] Will set property "Label" to "LEDD1B"
+2026-01-22T14:00:01.460855 tid14064 [dbg,Core:dev:Arduino-Switch] Did set property "Label" to "LEDD1B"
+2026-01-22T14:00:01.460872 tid14064 [dbg,Core] Config group System: did apply preset Startup
+2026-01-22T14:00:01.460886 tid14064 [dbg,Core] Waiting for device COM6...
+2026-01-22T14:00:01.460894 tid14064 [dbg,Core] Finished waiting for device COM6
+2026-01-22T14:00:01.460899 tid14064 [dbg,Core] Waiting for device COM7...
+2026-01-22T14:00:01.460905 tid14064 [dbg,Core] Finished waiting for device COM7
+2026-01-22T14:00:01.460909 tid14064 [dbg,Core] Waiting for device COM4...
+2026-01-22T14:00:01.460912 tid14064 [dbg,Core] Finished waiting for device COM4
+2026-01-22T14:00:01.460917 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:00:01.460922 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:00:01.460926 tid14064 [dbg,Core] Waiting for device Thorlabs DC4100...
+2026-01-22T14:00:01.460931 tid14064 [dbg,Core] Finished waiting for device Thorlabs DC4100
+2026-01-22T14:00:01.460935 tid14064 [dbg,Core] Waiting for device Arduino-Hub...
+2026-01-22T14:00:01.460939 tid14064 [dbg,Core] Finished waiting for device Arduino-Hub
+2026-01-22T14:00:01.460943 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:00:01.460949 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:00:01.460953 tid14064 [dbg,Core] Waiting for device Arduino-Switch...
+2026-01-22T14:00:01.460959 tid14064 [dbg,Core] Finished waiting for device Arduino-Switch
+2026-01-22T14:00:01.460963 tid14064 [dbg,Core] Waiting for device XYStage...
+2026-01-22T14:00:01.460968 tid14064 [dbg,Core] Finished waiting for device XYStage
+2026-01-22T14:00:01.460972 tid14064 [dbg,Core] Will update system state cache
+2026-01-22T14:00:01.464800 tid14064 [dbg,dev:COM6] SetCommand -> cc? 0\r\n
+2026-01-22T14:00:01.489156 tid14064 [dbg,dev:COM6] GetAnswer <- 55\r\n
+2026-01-22T14:00:01.489219 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.519656 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.519768 tid14064 [dbg,dev:COM6] SetCommand -> cc? 1\r\n
+2026-01-22T14:00:01.550962 tid14064 [dbg,dev:COM6] GetAnswer <- 700\r\n
+2026-01-22T14:00:01.550985 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.581026 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.581064 tid14064 [dbg,dev:COM6] SetCommand -> cc? 2\r\n
+2026-01-22T14:00:01.610704 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:01.610722 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.641827 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.641868 tid14064 [dbg,dev:COM6] SetCommand -> cc? 3\r\n
+2026-01-22T14:00:01.671796 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:01.671835 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.701249 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.701295 tid14064 [dbg,dev:COM6] SetCommand -> l? 0\r\n
+2026-01-22T14:00:01.732499 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:01.732523 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.762107 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.762200 tid14064 [dbg,dev:COM6] SetCommand -> l? 1\r\n
+2026-01-22T14:00:01.793042 tid14064 [dbg,dev:COM6] GetAnswer <- 700\r\n
+2026-01-22T14:00:01.793100 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.823379 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.823505 tid14064 [dbg,dev:COM6] SetCommand -> l? 2\r\n
+2026-01-22T14:00:01.853020 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:01.853040 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.883574 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.883624 tid14064 [dbg,dev:COM6] SetCommand -> l? 3\r\n
+2026-01-22T14:00:01.912962 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:01.912997 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:01.943183 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:01.943270 tid14064 [dbg,dev:COM6] SetCommand -> ml? 0\r\n
+2026-01-22T14:00:01.974355 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:01.974400 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.004340 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.004432 tid14064 [dbg,dev:COM6] SetCommand -> ml? 1\r\n
+2026-01-22T14:00:02.034531 tid14064 [dbg,dev:COM6] GetAnswer <- 700\r\n
+2026-01-22T14:00:02.034585 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.067048 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.067167 tid14064 [dbg,dev:COM6] SetCommand -> ml? 2\r\n
+2026-01-22T14:00:02.096947 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:02.097006 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.127787 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.127911 tid14064 [dbg,dev:COM6] SetCommand -> ml? 3\r\n
+2026-01-22T14:00:02.158847 tid14064 [dbg,dev:COM6] GetAnswer <- 1000\r\n
+2026-01-22T14:00:02.158874 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.188985 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.189067 tid14064 [dbg,dev:COM6] SetCommand -> m?\r\n
+2026-01-22T14:00:02.220111 tid14064 [dbg,dev:COM6] GetAnswer <- 1\r\n
+2026-01-22T14:00:02.220172 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.251201 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.251307 tid14064 [dbg,dev:COM6] SetCommand -> bp? 0\r\n
+2026-01-22T14:00:02.281870 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:02.281927 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.313014 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.313138 tid14064 [dbg,dev:COM6] SetCommand -> bp? 1\r\n
+2026-01-22T14:00:02.341881 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:02.341940 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.372129 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.372255 tid14064 [dbg,dev:COM6] SetCommand -> bp? 2\r\n
+2026-01-22T14:00:02.401744 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:02.401765 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.431924 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.432002 tid14064 [dbg,dev:COM6] SetCommand -> bp? 3\r\n
+2026-01-22T14:00:02.461998 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:02.462056 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.491445 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.491629 tid14064 [dbg,dev:COM6] SetCommand -> r?\n
+2026-01-22T14:00:02.521817 tid14064 [dbg,dev:COM6] GetAnswer <- 0\r\n
+2026-01-22T14:00:02.521873 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:02.553138 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:02.553319 tid14064 [dbg,dev:COM7] Write -> (hex) 14 04 01 00 21 01
+2026-01-22T14:00:02.597870 tid14064 [dbg,dev:COM7] Read <- (hex) 15 04 0e 00 81 21
+2026-01-22T14:00:02.597896 tid14064 [dbg,dev:COM7] Read <- (hex) 01 00 00 00 00 00 0d 00 00 00 4a 0c 02 00
+2026-01-22T14:00:02.597924 tid14064 [dbg,dev:COM7] Write -> (hex) 14 04 01 00 21 01
+2026-01-22T14:00:02.644335 tid14064 [dbg,dev:COM7] Read <- (hex) 15 04 0e 00 81 21
+2026-01-22T14:00:02.644362 tid14064 [dbg,dev:COM7] Read <- (hex) 01 00 00 00 00 00 0d 00 00 00 4a 0c 02 00
+2026-01-22T14:00:02.644457 tid14064 [IFO,Core] Did update system state cache
+2026-01-22T14:00:02.644540 tid14064 [dbg,App] Notification from MMCore ignored
+2026-01-22T14:00:02.673624 tid14064 [dbg,Core] Will set circular buffer size to 50000 MB
+2026-01-22T14:00:10.903169 tid14064 [dbg,Core] Did set circular buffer size to 50000 MB
+2026-01-22T14:00:10.906415 tid14064 [IFO,App] EDTHangLogger: Started monitoring of EDT hangs
+                                    [       ] [heartbeat timeout = 4500 ms, hang check interval = 1000 ms]
+2026-01-22T14:00:11.502943 tid14064 [IFO,App] Rebuilding config group table
+2026-01-22T14:00:11.503496 tid14064 [dbg,dev:COM6] SetCommand -> bp? 1\r\n
+2026-01-22T14:00:11.531027 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.531045 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.561076 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.562420 tid14064 [dbg,dev:COM6] SetCommand -> bp? 1\r\n
+2026-01-22T14:00:11.590989 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.591006 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.621548 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.621761 tid14064 [dbg,dev:COM6] SetCommand -> bp? 3\r\n
+2026-01-22T14:00:11.651071 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.651088 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.681632 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.681724 tid14064 [dbg,dev:COM6] SetCommand -> bp? 3\r\n
+2026-01-22T14:00:11.711856 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.711873 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.742063 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.742169 tid14064 [dbg,dev:COM6] SetCommand -> bp? 2\r\n
+2026-01-22T14:00:11.773494 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.773511 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.802682 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.802771 tid14064 [dbg,dev:COM6] SetCommand -> bp? 2\r\n
+2026-01-22T14:00:11.834080 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.834098 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.865052 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.865162 tid14064 [dbg,dev:COM6] SetCommand -> bp? 0\r\n
+2026-01-22T14:00:11.895626 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.895645 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.925452 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.925542 tid14064 [dbg,dev:COM6] SetCommand -> bp? 0\r\n
+2026-01-22T14:00:11.956569 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:11.956587 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:11.986547 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:11.986957 tid14064 [dbg,dev:COM6] SetCommand -> bp? 0\r\n
+2026-01-22T14:00:12.016890 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:12.016903 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:12.046662 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:12.046696 tid14064 [dbg,dev:COM6] SetCommand -> bp? 1\r\n
+2026-01-22T14:00:12.075850 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:12.075861 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:12.107363 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:12.107401 tid14064 [dbg,dev:COM6] SetCommand -> bp? 2\r\n
+2026-01-22T14:00:12.139438 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:12.139452 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:12.169690 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:12.169799 tid14064 [dbg,dev:COM6] SetCommand -> bp? 3\r\n
+2026-01-22T14:00:12.199426 tid14064 [dbg,dev:COM6] GetAnswer <- 0.00000000e-01\r\n
+2026-01-22T14:00:12.199440 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:00:12.230344 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:00:12.230510 tid14064 [IFO,App] Finished rebuilding config group table
+2026-01-22T14:00:12.247578 tid14064 [IFO,App] Startup script (C:\Program Files\Micro-Manager-2.0-3-gamma-nightly\MMStartup.bsh) not present
+2026-01-22T14:00:12.247618 tid14064 [IFO,App] Updating GUI; config pad = true; from cache = true
+2026-01-22T14:00:12.257757 tid14064 [dbg,dev:XYStage] GetPositionSteps(), X=1100000, Y=750000
+2026-01-22T14:00:12.262997 tid14064 [IFO,App] Rebuilding config group table
+2026-01-22T14:00:12.263496 tid14064 [IFO,App] Finished rebuilding config group table
+2026-01-22T14:00:12.266292 tid14064 [IFO,App] Finished updating GUI
+2026-01-22T14:00:12.266937 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:00:12.266942 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:00:12.274068 tid14064 [dbg,App] [UI] JButton "OK" clicked in IntroDlg.
+2026-01-22T14:00:12.465687 tid14064 [dbg,dev:XYStage] GetPositionSteps(), X=1100000, Y=750000
+2026-01-22T14:00:18.671297 tid14064 [dbg,App] [UI] SortedMenu "Plugins" clicked in MainFrame.
+2026-01-22T14:00:22.566850 tid14492 [IFO,App] Initialized ZMQ Server on port: 4827
+2026-01-22T14:01:18.789545 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 33.000 ms
+2026-01-22T14:01:18.813466 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 33.000 ms
+2026-01-22T14:01:18.813501 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:01:18.813504 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:01:18.856460 tid14064 [dbg,App] [UI] PipelineTable clicked in PipelineFrame.
+2026-01-22T14:01:30.449973 tid14064 [IFO,App] Error: NullPOinterException in UIMonitor-getReleaseAction
+2026-01-22T14:01:32.366920 tid14064 [IFO,App] Error: NullPOinterException in UIMonitor-getReleaseAction
+2026-01-22T14:01:32.702804 tid14064 [dbg,App] [UI]  set to "C:\Users\admin\Desktop\Testdata" in JDialog.
+2026-01-22T14:01:36.079270 tid14064 [dbg,App] [UI] JButton nullclicked in JDialog.
+2026-01-22T14:01:37.048634 tid14064 [IFO,App] Error: NullPOinterException in UIMonitor-getReleaseAction
+2026-01-22T14:02:10.302847 tid14064 [dbg,App] [UI]  set to "C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffplay.exe" in JDialog.
+2026-01-22T14:02:11.174643 tid14064 [dbg,App] [UI]  set to "C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe" in JDialog.
+2026-01-22T14:02:37.113039 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 33.001 ms
+2026-01-22T14:02:37.136284 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 33.001 ms
+2026-01-22T14:02:37.136307 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:02:37.136309 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:02:37.166957 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:37.166968 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:37.167010 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:02:37.167024 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:02:37.167059 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:02:37.176254 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:02:37.176260 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:37.176263 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:37.335804 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:02:37.335836 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:37.335841 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:37.337312 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:37.337317 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:37.340576 tid14064 [dbg,App] [UI]  "Stop Live" clicked in MainFrame.
+2026-01-22T14:02:37.647942 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:02:37.767687 tid12296 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:02:37.767714 tid12296 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:02:37.791874 tid12296 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:02:38.133063 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:02:38.133089 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:38.133092 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:38.145675 tid14064 [IFO,App] Class: class org.micromanager.display.internal.displaywindow.DisplayController
+2026-01-22T14:02:38.145695 tid14064 [IFO,App] Classloader: ij.io.PluginClassLoader@2882d2b4
+2026-01-22T14:02:38.356691 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:38.356699 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:38.356704 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:02:38.356711 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:02:38.356735 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:02:38.382133 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:02:38.382144 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:38.382147 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:38.453949 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:02:38.454012 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:02:38.454023 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:02:38.459542 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=white, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:02:38.460496 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg001.mp4 (2304x2304, constant @30.0 fps)
+2026-01-22T14:02:38.460549 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg001.mp4]
+2026-01-22T14:02:39.568533 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:02:39.569115 tid14064 [dbg,App] [MP4Stream] Display scaling: min=29831, max=50237, range=20406, gamma=1.000
+2026-01-22T14:02:43.555794 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=234→238, max=9063→8344, range=8829→8106 (-8.2%), gamma=1.000
+2026-01-22T14:02:45.899637 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=239→232, max=6478→8227, range=6239→7995 (28.1%), gamma=1.000
+2026-01-22T14:02:55.531703 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=304→546, max=7359→6111, range=7055→5565 (-21.1%), gamma=1.000
+2026-01-22T14:02:58.805738 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=381→382, max=7514→6913, range=7133→6531 (-8.4%), gamma=1.000
+2026-01-22T14:03:07.476489 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:03:07.652041 tid8480 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:03:07.652068 tid8480 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:03:07.665571 tid8480 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:03:08.015376 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:03:08.015405 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:08.015408 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:08.015906 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:03:08.017547 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:03:08.017561 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (856 frames)...
+2026-01-22T14:03:08.473447 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (856 frames written).
+2026-01-22T14:03:08.473762 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:08.473766 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:08.474351 tid14064 [dbg,App] [UI]  "Live" clicked in MainFrame.
+2026-01-22T14:03:25.013504 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 10.000 ms
+2026-01-22T14:03:25.038149 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 10.000 ms
+2026-01-22T14:03:25.038199 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:03:25.038203 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:03:32.519188 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:32.519198 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:32.519205 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:03:32.519211 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:03:32.519236 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:03:32.545149 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:03:32.545156 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:32.545158 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:32.617380 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:03:32.617409 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:32.617413 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:32.618943 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:32.618949 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:33.048474 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=white, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:03:33.048627 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg002.mp4 (2304x2304, constant @30.0 fps)
+2026-01-22T14:03:33.048637 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg002.mp4]
+2026-01-22T14:03:33.055678 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:03:33.055769 tid14064 [dbg,App] [MP4Stream] Display scaling: min=254, max=7585, range=7331, gamma=1.000
+2026-01-22T14:03:41.502294 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:03:41.508941 tid6772 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:03:41.508969 tid6772 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:03:41.531773 tid6772 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:03:41.895464 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:03:41.895527 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:41.895535 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:41.896707 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:03:41.896896 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:03:41.896908 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (249 frames)...
+2026-01-22T14:03:42.254800 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (249 frames written).
+2026-01-22T14:03:42.255283 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:42.255290 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:42.256219 tid14064 [dbg,App] [UI]  "Live" clicked in JFrame.
+2026-01-22T14:03:42.260466 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:42.260472 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:42.260477 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:03:42.260484 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:03:42.260512 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:03:42.289778 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:03:42.289786 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:42.289789 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:42.359823 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:03:42.359856 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:42.359861 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:42.361447 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:42.361453 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:42.362030 tid14064 [dbg,App] [UI]  "Stop Live" clicked in JFrame.
+2026-01-22T14:03:42.678469 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:03:42.768998 tid16320 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:03:42.769026 tid16320 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:03:42.776518 tid16320 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:03:43.131896 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:03:43.131926 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:43.131929 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:43.132848 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:03:43.132859 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:03:43.133454 tid14064 [dbg,App] [UI]  "Live" clicked in JFrame.
+2026-01-22T14:03:56.489979 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 500.000 ms
+2026-01-22T14:03:56.516522 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 500.000 ms
+2026-01-22T14:03:56.516575 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:03:56.516582 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:04:12.191042 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:04:12.191053 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:04:12.191057 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:04:12.191065 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:04:12.191091 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:04:12.197410 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:04:12.197417 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:04:12.197420 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:04:12.273668 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:04:12.273707 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:04:12.273713 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:04:12.275685 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:04:12.275694 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:04:12.276611 tid14064 [dbg,App] [UI]  "Stop Live" clicked in JFrame.
+2026-01-22T14:04:13.551260 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=white, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:04:13.551498 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg003.mp4 (2304x2304, constant @30.0 fps)
+2026-01-22T14:04:13.551517 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg003.mp4]
+2026-01-22T14:04:13.564072 tid14064 [dbg,App] [MP4Stream] Watchdog timeout updated: 2000 ms (exposure 500 ms, mult 2.0, margin 1000 ms)
+2026-01-22T14:04:13.564151 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:04:13.564186 tid14064 [dbg,App] [MP4Stream] Display scaling: min=175, max=5225, range=5050, gamma=1.000
+2026-01-22T14:04:22.710221 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:04:22.990475 tid15896 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:04:22.990503 tid15896 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:04:23.008251 tid15896 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:04:23.067176 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:04:23.067209 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:04:23.067213 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:04:23.067884 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:04:23.067997 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:04:23.068004 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (271 frames)...
+2026-01-22T14:04:23.218797 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (271 frames written).
+2026-01-22T14:04:23.219233 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:04:23.219243 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:04:23.220139 tid14064 [dbg,App] [UI]  "Live" clicked in JFrame.
+2026-01-22T14:04:37.744027 tid14064 [dbg,App] [UI] JRadioButton "Real-time (as fast as camera)" toggled on in JDialog.
+2026-01-22T14:04:39.966979 tid14064 [dbg,App] [UI] JComboBox clicked in JDialog.
+2026-01-22T14:04:41.014498 tid14064 [dbg,App] [UI]  "ComboBox.list" set to "Black" in JDialog.
+2026-01-22T14:04:59.118436 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 100.000 ms
+2026-01-22T14:04:59.140827 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 100.000 ms
+2026-01-22T14:04:59.140849 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:04:59.140851 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:05:01.966061 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 100.041 ms
+2026-01-22T14:05:01.990043 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 100.041 ms
+2026-01-22T14:05:01.990097 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:05:01.990107 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:05:07.830503 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:07.830512 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:07.830517 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:05:07.830525 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:05:07.830554 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:05:07.853765 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:05:07.853773 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:07.853775 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:07.928914 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:05:07.928945 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:07.928949 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:07.930971 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:07.930977 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:07.931569 tid14064 [dbg,App] [UI]  "Stop Live" clicked in JFrame.
+2026-01-22T14:05:08.436056 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=black, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:05:08.436168 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg004.mp4 (2304x2304, realtime/VFR)
+2026-01-22T14:05:08.436177 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg004.mp4]
+2026-01-22T14:05:08.443220 tid14064 [dbg,App] [MP4Stream] Watchdog timeout updated: 1500 ms (exposure 100 ms, mult 2.0, margin 1000 ms)
+2026-01-22T14:05:08.443332 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:05:08.443364 tid14064 [dbg,App] [MP4Stream] Display scaling: min=2400, max=65535, range=63135, gamma=1.000
+2026-01-22T14:05:12.799312 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=505→515, max=15304→13743, range=14799→13228 (-10.6%), gamma=1.000
+2026-01-22T14:05:15.242424 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=459→441, max=15262→13571, range=14803→13130 (-11.3%), gamma=1.000
+2026-01-22T14:05:17.268802 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=531→431, max=11574→15875, range=11043→15444 (39.9%), gamma=1.000
+2026-01-22T14:05:19.308551 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:05:19.491800 tid9336 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:05:19.491828 tid9336 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:05:19.523839 tid9336 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:05:19.863083 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:05:19.863112 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:19.863115 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:19.863595 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:05:19.863665 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:05:19.863670 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (58 frames)...
+2026-01-22T14:05:20.328474 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (58 frames written).
+2026-01-22T14:05:20.329014 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:20.329021 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:20.330038 tid14064 [dbg,App] [UI]  "Live" clicked in JFrame.
+2026-01-22T14:05:35.917730 tid14064 [dbg,Core] Will set camera ORCA-Fusion exposure to 100.041 ms
+2026-01-22T14:05:35.941237 tid14064 [dbg,Core] Did set camera ORCA-Fusion exposure to 100.041 ms
+2026-01-22T14:05:35.941259 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:05:35.941261 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:05:41.039228 tid14064 [dbg,App] [UI] PipelineTable clicked in PipelineFrame.
+2026-01-22T14:05:42.768435 tid14064 [dbg,App] [UI] JRadioButton "Time-lapse compression" toggled on in JDialog.
+2026-01-22T14:05:57.854730 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:57.854748 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:57.854759 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:05:57.854772 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:05:57.854810 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:05:57.884559 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:05:57.884572 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:57.884575 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:57.959602 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:05:57.959625 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:57.959629 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:57.961045 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:05:57.961050 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:05:57.961573 tid14064 [dbg,App] [UI]  "Stop Live" clicked in JFrame.
+2026-01-22T14:05:58.468254 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=black, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:05:58.468381 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg005.mp4 (2304x2304, timelapse 10x speed @30 fps)
+2026-01-22T14:05:58.468394 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg005.mp4]
+2026-01-22T14:05:58.476584 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:05:58.476643 tid14064 [dbg,App] [MP4Stream] Display scaling: min=432, max=15880, range=15448, gamma=1.000
+2026-01-22T14:06:15.042356 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=430→431, max=15877→12342, range=15447→11911 (-22.9%), gamma=1.000
+2026-01-22T14:06:18.702015 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=374→478, max=15325→11716, range=14951→11238 (-24.8%), gamma=1.000
+2026-01-22T14:06:22.936908 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=1438→1617, max=15299→17894, range=13861→16277 (17.4%), gamma=1.000
+2026-01-22T14:06:24.962059 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=4853→4866, max=14534→15262, range=9681→10396 (7.4%), gamma=1.000
+2026-01-22T14:06:30.328876 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=3166→2463, max=25526→28057, range=22360→25594 (14.5%), gamma=1.000
+2026-01-22T14:06:36.011461 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=1571→1575, max=47052→44640, range=45481→43065 (-5.3%), gamma=1.000
+2026-01-22T14:06:38.396691 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=1482→1557, max=46102→50561, range=44620→49004 (9.8%), gamma=1.000
+2026-01-22T14:06:49.082821 tid14064 [dbg,App] [MP4Stream] Display scaling changed: min=1180→695, max=65535→44316, range=64355→43621 (-32.2%), gamma=1.000
+2026-01-22T14:06:58.230105 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:06:58.389644 tid8660 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:06:58.389671 tid8660 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:06:58.410284 tid8660 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:06:58.759184 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:06:58.759215 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:06:58.759218 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:06:58.759694 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:06:58.759789 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:06:58.759793 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (179 frames)...
+2026-01-22T14:06:58.903457 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (179 frames written).
+2026-01-22T14:06:58.903755 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:06:58.903760 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:06:58.904246 tid14064 [dbg,App] [UI]  "Live" clicked in JFrame.
+2026-01-22T14:07:00.518211 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:00.518221 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:00.518225 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:07:00.518232 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:07:00.518257 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:07:00.536464 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:07:00.536470 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:00.536473 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:00.612857 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:07:00.612893 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:00.612898 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:00.614687 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:00.614694 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:00.615382 tid14064 [dbg,App] [UI]  "Stop Live" clicked in JFrame.
+2026-01-22T14:07:00.799703 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:07:00.927510 tid9692 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:07:00.927542 tid9692 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:07:00.946188 tid9692 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:07:01.292090 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:07:01.292118 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:01.292122 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:01.292834 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:01.292837 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:01.293314 tid14064 [dbg,App] [UI]  "Live" clicked in JFrame.
+2026-01-22T14:07:15.182584 tid14064 [dbg,App] [UI] JComboBox clicked in JDialog.
+2026-01-22T14:07:15.806284 tid14064 [dbg,App] [UI]  "ComboBox.list" set to "White" in JDialog.
+2026-01-22T14:07:17.878342 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:17.878356 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:17.878364 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:07:17.878373 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:07:17.878404 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:07:17.903099 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:07:17.903107 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:17.903109 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:17.978971 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:07:17.979006 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:17.979011 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:17.980811 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:17.980818 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:17.981464 tid14064 [dbg,App] [UI]  "Stop Live" clicked in JFrame.
+2026-01-22T14:07:18.485911 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=white, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:07:18.486008 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg006.mp4 (2304x2304, timelapse 10x speed @30 fps)
+2026-01-22T14:07:18.486018 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg006.mp4]
+2026-01-22T14:07:18.493057 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:07:18.493131 tid14064 [dbg,App] [MP4Stream] Display scaling: min=695, max=65534, range=64839, gamma=1.000
+2026-01-22T14:07:21.702908 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:07:21.797356 tid17260 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:07:21.797384 tid17260 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:07:21.809657 tid17260 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:07:22.162144 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:07:22.162171 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:22.162174 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:22.162578 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:07:22.162640 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:07:22.162644 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (9 frames)...
+2026-01-22T14:07:22.481542 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (9 frames written).
+2026-01-22T14:07:22.482247 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:22.482251 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:24.646100 tid14064 [dbg,App] [UI] JComboBox clicked in JDialog.
+2026-01-22T14:07:25.558975 tid14064 [dbg,App] [UI]  "ComboBox.list" set to "Black" in JDialog.
+2026-01-22T14:07:28.094644 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:28.094654 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:28.094659 tid14064 [dbg,Core] Will start continuous sequence acquisition from current camera
+2026-01-22T14:07:28.094667 tid14064 [dbg,dev:Arduino-Shutter] Request 1
+2026-01-22T14:07:28.094690 tid14064 [dbg,dev:COM4] Write -> (hex) 01 01
+2026-01-22T14:07:28.104957 tid14064 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:07:28.104960 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:28.104961 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:28.182117 tid14064 [dbg,Core] Did start continuous sequence acquisition from current camera
+2026-01-22T14:07:28.182149 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:28.182154 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:28.183903 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:28.183910 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:28.690071 tid14064 [dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=black, bg=true), scalebar=true (pixelSize=0,1091 µm)
+2026-01-22T14:07:28.690174 tid14064 [IFO,App] [MP4Stream] Starting FFmpeg: C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg007.mp4 (2304x2304, timelapse 10x speed @30 fps)
+2026-01-22T14:07:28.690185 tid14064 [dbg,App] [MP4Stream] FFmpeg command: [C:\Program Files\ffmpeg\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe, -y, -f, rawvideo, -pix_fmt, gray, -s, 2304x2304, -r, 30.000, -i, -, -an, -c:v, libx264, -preset, veryfast, -crf, 18, -pix_fmt, yuv420p, C:\Users\admin\Desktop\mp4-stream-testdata\output_2304x2304_seg007.mp4]
+2026-01-22T14:07:28.697799 tid14064 [dbg,App] [MP4Stream] Registered for Live/Acquisition events.
+2026-01-22T14:07:28.697834 tid14064 [dbg,App] [MP4Stream] Display scaling: min=695, max=65534, range=64839, gamma=1.000
+2026-01-22T14:07:31.822509 tid14064 [dbg,Core] Will stop sequence acquisition from current camera
+2026-01-22T14:07:32.000236 tid16400 [dbg,dev:Arduino-Shutter] Request 0
+2026-01-22T14:07:32.000265 tid16400 [dbg,dev:COM4] Write -> (hex) 01 00
+2026-01-22T14:07:32.021497 tid16400 [dbg,dev:COM4] Read <- (hex) 01
+2026-01-22T14:07:32.372101 tid14064 [dbg,Core] Did stop sequence acquisition from current camera
+2026-01-22T14:07:32.372134 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:32.372139 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:07:32.372680 tid14064 [IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+2026-01-22T14:07:32.372758 tid14064 [dbg,App] [MP4Stream] Unregistered from Live/Acquisition events.
+2026-01-22T14:07:32.372763 tid14064 [IFO,App] [MP4Stream] Stopping FFmpeg and finalizing MP4 file (9 frames)...
+2026-01-22T14:07:32.686165 tid14064 [IFO,App] [MP4Stream] FFmpeg finalized successfully (9 frames written).
+2026-01-22T14:07:32.686460 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:07:32.686464 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:08:46.098977 tid14064 [dbg,App] Scheduler in AnimationController was shut down
+2026-01-22T14:08:47.680435 tid14064 [IFO,App] Failed to get Z Position from Core.
+                                    [       ] java.lang.Exception: No device with label "" in Thread[AWT-EventQueue-0,6,main]
+                                    [       ]   at mmcorej.MMCoreJJNI.CMMCore_getPosition__SWIG_1(Native Method)
+                                    [       ]   at mmcorej.CMMCore.getPosition(CMMCore.java:1267)
+                                    [       ]   at org.micromanager.internal.dialogs.AcqControlDlg.applySettingsFromGUI(AcqControlDlg.java:2027)
+                                    [       ]   at org.micromanager.internal.dialogs.AcqControlDlg.saveAcqSettingsToProfile(AcqControlDlg.java:1630)
+                                    [       ]   at org.micromanager.internal.dialogs.AcqControlDlg.close(AcqControlDlg.java:1294)
+                                    [       ]   at org.micromanager.internal.MMUIManager.cleanupOnClose(MMUIManager.java:212)
+                                    [       ]   at org.micromanager.internal.MMStudio.cleanupOnClose(MMStudio.java:747)
+                                    [       ]   at org.micromanager.internal.MMStudio.closeSequence(MMStudio.java:809)
+                                    [       ]   at org.micromanager.internal.MainFrame$1.windowClosing(MainFrame.java:187)
+                                    [       ]   at java.desktop/java.awt.AWTEventMulticaster.windowClosing(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.Window.processWindowEvent(Unknown Source)
+                                    [       ]   at java.desktop/javax.swing.JFrame.processWindowEvent(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.Window.processEvent(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.Component.dispatchEventImpl(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.Container.dispatchEventImpl(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.Window.dispatchEventImpl(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.Component.dispatchEvent(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventQueue.dispatchEventImpl(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventQueue$4.run(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventQueue$4.run(Unknown Source)
+                                    [       ]   at java.base/java.security.AccessController.doPrivileged(Native Method)
+                                    [       ]   at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+                                    [       ]   at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventQueue$5.run(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventQueue$5.run(Unknown Source)
+                                    [       ]   at java.base/java.security.AccessController.doPrivileged(Native Method)
+                                    [       ]   at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventQueue.dispatchEvent(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+                                    [       ]   at java.desktop/java.awt.EventDispatchThread.run(Unknown Source)
+2026-01-22T14:08:47.690930 tid14064 [IFO,App] EDTHangLogger: Stopping monitoring of EDT hangs
+2026-01-22T14:08:47.691006 tid14064 [dbg,Core] Waiting for device COM6...
+2026-01-22T14:08:47.691010 tid14064 [dbg,Core] Finished waiting for device COM6
+2026-01-22T14:08:47.691011 tid14064 [dbg,Core] Waiting for device COM7...
+2026-01-22T14:08:47.691012 tid14064 [dbg,Core] Finished waiting for device COM7
+2026-01-22T14:08:47.691013 tid14064 [dbg,Core] Waiting for device COM4...
+2026-01-22T14:08:47.691014 tid14064 [dbg,Core] Finished waiting for device COM4
+2026-01-22T14:08:47.691016 tid14064 [dbg,Core] Waiting for device ORCA-Fusion...
+2026-01-22T14:08:47.691018 tid14064 [dbg,Core] Finished waiting for device ORCA-Fusion
+2026-01-22T14:08:47.691019 tid14064 [dbg,Core] Waiting for device Thorlabs DC4100...
+2026-01-22T14:08:47.691020 tid14064 [dbg,Core] Finished waiting for device Thorlabs DC4100
+2026-01-22T14:08:47.691022 tid14064 [dbg,Core] Waiting for device Arduino-Hub...
+2026-01-22T14:08:47.691023 tid14064 [dbg,Core] Finished waiting for device Arduino-Hub
+2026-01-22T14:08:47.691024 tid14064 [dbg,Core] Waiting for device Arduino-Shutter...
+2026-01-22T14:08:47.691026 tid14064 [dbg,Core] Finished waiting for device Arduino-Shutter
+2026-01-22T14:08:47.691027 tid14064 [dbg,Core] Waiting for device Arduino-Switch...
+2026-01-22T14:08:47.691028 tid14064 [dbg,Core] Finished waiting for device Arduino-Switch
+2026-01-22T14:08:47.691029 tid14064 [dbg,Core] Waiting for device XYStage...
+2026-01-22T14:08:47.691032 tid14064 [dbg,Core] Finished waiting for device XYStage
+2026-01-22T14:08:47.691034 tid14064 [IFO,Core] Default camera unset
+2026-01-22T14:08:47.691044 tid14064 [IFO,Core] Default shutter unset
+2026-01-22T14:08:47.691046 tid14064 [IFO,Core] Default xy stage unset
+2026-01-22T14:08:47.691049 tid14064 [IFO,Core] Default stage unset
+2026-01-22T14:08:47.691051 tid14064 [IFO,Core] Default autofocus unset
+2026-01-22T14:08:47.691053 tid14064 [IFO,Core] Default image processor unset
+2026-01-22T14:08:47.691058 tid14064 [IFO,Core] Default galvo unset
+2026-01-22T14:08:47.691060 tid14064 [IFO,Core] Default SLM unset
+2026-01-22T14:08:47.691103 tid14064 [dbg,Core] Will unload all devices
+2026-01-22T14:08:47.691189 tid14064 [dbg,dev:COM6] SetCommand -> sm?\r\n
+2026-01-22T14:08:47.711534 tid14064 [dbg,dev:COM6] GetAnswer <- 0\r\n
+2026-01-22T14:08:47.711552 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:08:47.744203 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:08:47.744229 tid14064 [dbg,dev:COM6] SetCommand -> o -1 0\r\n
+2026-01-22T14:08:47.744234 tid14064 [dbg,dev:COM6] SetCommand -> e?\r\n
+2026-01-22T14:08:47.773794 tid14064 [dbg,dev:COM6] GetAnswer <- ERROR 0:No Error.\r\n
+2026-01-22T14:08:48.767222 tid14064 [IFO,Core] Did unload all devices
+2026-01-22T14:08:48.767236 tid14064 [IFO,Core] System reset
+2026-01-22T14:08:49.756769 tid14064 [IFO,Core] Core session ended
