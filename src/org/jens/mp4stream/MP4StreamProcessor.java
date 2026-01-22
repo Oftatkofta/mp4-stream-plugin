@@ -458,12 +458,12 @@ public final class MP4StreamProcessor implements Processor {
       height_ = h;
       segmentIndex_++;
 
-      // Load recording mode settings
-      recordingMode_ = getSettingString(MP4StreamConfigurator.KEY_RECORDING_MODE, 
+      // Load recording mode settings directly from PREFS (they're saved immediately when changed)
+      recordingMode_ = PREFS.get(MP4StreamConfigurator.KEY_RECORDING_MODE, 
             MP4StreamConfigurator.MODE_CONSTANT_FPS);
-      targetFps_ = getSettingDouble(MP4StreamConfigurator.KEY_TARGET_FPS, 
+      targetFps_ = PREFS.getDouble(MP4StreamConfigurator.KEY_TARGET_FPS, 
             MP4StreamConfigurator.DEFAULT_TARGET_FPS);
-      timelapseFactor_ = getSettingDouble(MP4StreamConfigurator.KEY_TIMELAPSE_FACTOR, 
+      timelapseFactor_ = PREFS.getDouble(MP4StreamConfigurator.KEY_TIMELAPSE_FACTOR, 
             MP4StreamConfigurator.DEFAULT_TIMELAPSE_FACTOR);
 
       // MP4 cannot change resolution mid-stream. Segment output to new file.
