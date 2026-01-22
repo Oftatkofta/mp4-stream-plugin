@@ -84,6 +84,8 @@ The **Snap/Live** toggle controls when the plugin processes images. Set it to **
 
 Click the Configure... button next to the plugin to open settings:
 
+![Configure Menu](images/configure-menu.png)
+
 ### General Settings
 
 | Setting | Description |
