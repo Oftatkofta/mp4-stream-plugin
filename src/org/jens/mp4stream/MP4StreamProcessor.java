@@ -32,8 +32,7 @@ import org.micromanager.acquisition.AcquisitionEndedEvent;
 
 import com.google.common.eventbus.Subscribe;
 
-// Note: Processor API is deprecated in MM 2.0 but remains the required
-// extension point for image processors. This is expected, but gives a compiler warning
+
 public final class MP4StreamProcessor implements Processor {
 
    private static final Preferences PREFS =
@@ -724,8 +723,17 @@ public final class MP4StreamProcessor implements Processor {
       if (stem.toLowerCase().endsWith(".mp4")) {
          stem = stem.substring(0, stem.length() - 4);
       }
-      String segName = String.format("%s_%dx%d_seg%03d.mp4", stem, w, h, idx);
-      return new File(parent, segName).getAbsolutePath();
+
+      // Find an unused filename to avoid overwriting existing files
+      int candidate = idx;
+      File candidateFile;
+      do {
+         String segName = String.format("%s_%dx%d_seg%03d.mp4", stem, w, h, candidate);
+         candidateFile = new File(parent, segName);
+         candidate++;
+      } while (candidateFile.exists() && candidate < 10000);
+
+      return candidateFile.getAbsolutePath();
    }
 
    private void stopFfmpeg() {
