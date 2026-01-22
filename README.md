@@ -271,4 +271,4 @@ Issues and pull requests welcome. Please include:
 - Micro-Manager version
 - Camera model
 - Relevant log excerpts
-- Steps to reproduce
+- Steps to reproduce (see [TESTING.md](TESTING.md))
