@@ -63,6 +63,13 @@ public final class MP4StreamProcessor implements Processor {
    private double targetFps_ = MP4StreamConfigurator.DEFAULT_TARGET_FPS;
    private double timelapseFactor_ = MP4StreamConfigurator.DEFAULT_TIMELAPSE_FACTOR;
 
+   // Overlay settings (loaded from prefs)
+   private boolean timestampEnabled_ = MP4StreamConfigurator.DEFAULT_TIMESTAMP_ENABLED;
+   private String timestampColor_ = MP4StreamConfigurator.DEFAULT_TIMESTAMP_COLOR;
+   private boolean timestampBackground_ = MP4StreamConfigurator.DEFAULT_TIMESTAMP_BACKGROUND;
+   private boolean scalebarEnabled_ = MP4StreamConfigurator.DEFAULT_SCALEBAR_ENABLED;
+   private double pixelSizeUm_ = 0.0; // Loaded from image metadata
+
    // CFR (Constant Frame Rate) output state
    private long nextOutFrameIndex_ = 0;
    private boolean haveLastFrame_ = false;
@@ -172,12 +179,12 @@ public final class MP4StreamProcessor implements Processor {
          this.gamma = gamma;
       }
 
-      boolean equals(DisplayScaling other) {
+      boolean sameAs(DisplayScaling other) {
          if (other == null) {
             return false;
          }
          return this.min == other.min && this.max == other.max && 
-                Math.abs(this.gamma - other.gamma) < 1e-9;
+               Math.abs(this.gamma - other.gamma) < 1e-9;
       }
    }
 
@@ -187,7 +194,7 @@ public final class MP4StreamProcessor implements Processor {
       }
 
       // Check if scaling actually changed
-      if (lastScaling_ != null && lastScaling_.equals(newScaling)) {
+      if (lastScaling_ != null && lastScaling_.sameAs(newScaling)) {
          return;
       }
 
@@ -466,6 +473,27 @@ public final class MP4StreamProcessor implements Processor {
       timelapseFactor_ = PREFS.getDouble(MP4StreamConfigurator.KEY_TIMELAPSE_FACTOR, 
             MP4StreamConfigurator.DEFAULT_TIMELAPSE_FACTOR);
 
+      // Load overlay settings directly from PREFS
+      timestampEnabled_ = PREFS.getBoolean(MP4StreamConfigurator.KEY_TIMESTAMP_ENABLED,
+            MP4StreamConfigurator.DEFAULT_TIMESTAMP_ENABLED);
+      timestampColor_ = PREFS.get(MP4StreamConfigurator.KEY_TIMESTAMP_COLOR,
+            MP4StreamConfigurator.DEFAULT_TIMESTAMP_COLOR);
+      timestampBackground_ = PREFS.getBoolean(MP4StreamConfigurator.KEY_TIMESTAMP_BACKGROUND,
+            MP4StreamConfigurator.DEFAULT_TIMESTAMP_BACKGROUND);
+      scalebarEnabled_ = PREFS.getBoolean(MP4StreamConfigurator.KEY_SCALEBAR_ENABLED,
+            MP4StreamConfigurator.DEFAULT_SCALEBAR_ENABLED);
+
+      // Try to get pixel size from core
+      pixelSizeUm_ = getPixelSizeUm();
+
+      // Log overlay settings at debug level
+      logDebug_(String.format("Overlay settings: timestamp=%s (color=%s, bg=%s), scalebar=%s (pixelSize=%.4f µm)",
+            timestampEnabled_, timestampColor_, timestampBackground_, scalebarEnabled_, pixelSizeUm_));
+
+      if (scalebarEnabled_ && pixelSizeUm_ <= 0) {
+         logWarn_("Scale bar enabled but pixel size not configured in Micro-Manager. Scale bar will not be drawn.");
+      }
+
       // MP4 cannot change resolution mid-stream. Segment output to new file.
       final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
 
@@ -661,6 +689,18 @@ public final class MP4StreamProcessor implements Processor {
       }
    }
 
+   private double getPixelSizeUm() {
+      try {
+         if (studio_ != null) {
+            double ps = studio_.core().getPixelSizeUm();
+            if (ps > 0) {
+               return ps;
+            }
+         }
+      } catch (Exception ignored) {}
+      return 0.0;
+   }
+
    private void updateWatchdogFromExposureRateLimited_() {
       final long now = System.nanoTime();
       final long last = lastWdUpdateNanos_;
@@ -803,7 +843,7 @@ public final class MP4StreamProcessor implements Processor {
       // Close outside lock to avoid blocking producers/watchdog while ffmpeg finalizes.
       long frameCount = MP4StreamConfigurator.MODE_REALTIME.equals(recordingMode_) 
             ? vfrFrameCount_ : nextOutFrameIndex_;
-      logDebug_("Stopping FFmpeg and finalizing MP4 file (" + frameCount + " frames)...");
+      logInfo_("Stopping FFmpeg and finalizing MP4 file (" + frameCount + " frames)...");
       try {
          toClose.close();
          logInfo_("FFmpeg finalized successfully (" + frameCount + " frames written).");
@@ -917,21 +957,110 @@ public final class MP4StreamProcessor implements Processor {
          return;
       }
 
+      // Check if any overlay is enabled
+      if (!timestampEnabled_ && !scalebarEnabled_) {
+         return;
+      }
+
       // Copy into BufferedImage backing
       byte[] backing = ((DataBufferByte) grayImg_.getRaster().getDataBuffer()).getData();
       System.arraycopy(plane8, 0, backing, 0, Math.min(plane8.length, backing.length));
 
-      String text = "\u0394t " + formatElapsedHhMmSsMmm(dtSec);
+      // Determine colors
+      java.awt.Color textColor = MP4StreamConfigurator.COLOR_BLACK.equals(timestampColor_) 
+            ? java.awt.Color.BLACK : java.awt.Color.WHITE;
+      java.awt.Color shadowColor = (textColor == java.awt.Color.WHITE) 
+            ? java.awt.Color.BLACK : java.awt.Color.WHITE;
+      java.awt.Color bgColor = new java.awt.Color(
+            shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 180);
 
-      // High-contrast label: black shadow then white text
-      g2d_.setFont(new Font("Monospaced", Font.BOLD, 18));
-      g2d_.setColor(java.awt.Color.BLACK);
-      g2d_.drawString(text, 11, 23);
-      g2d_.setColor(java.awt.Color.WHITE);
-      g2d_.drawString(text, 10, 22);
+      // Draw timestamp overlay (top-left)
+      if (timestampEnabled_) {
+         String text = "\u0394t " + formatElapsedHhMmSsMmm(dtSec);
+         g2d_.setFont(new Font("Monospaced", Font.BOLD, 18));
+         
+         java.awt.FontMetrics fm = g2d_.getFontMetrics();
+         int textWidth = fm.stringWidth(text);
+         int textHeight = fm.getHeight();
+
+         if (timestampBackground_) {
+            // Draw contrasting background box
+            g2d_.setColor(bgColor);
+            g2d_.fillRect(5, 5, textWidth + 10, textHeight + 4);
+         }
+
+         // Draw text (with subtle shadow for readability)
+         g2d_.setColor(shadowColor);
+         g2d_.drawString(text, 11, 22);
+         g2d_.setColor(textColor);
+         g2d_.drawString(text, 10, 21);
+      }
+
+      // Draw scale bar (bottom-right)
+      if (scalebarEnabled_ && pixelSizeUm_ > 0) {
+         drawScaleBar(w, h, textColor, shadowColor, bgColor);
+      }
 
       // Copy back out
       System.arraycopy(backing, 0, plane8, 0, Math.min(plane8.length, backing.length));
+   }
+
+   private void drawScaleBar(int w, int h, java.awt.Color textColor, 
+         java.awt.Color shadowColor, java.awt.Color bgColor) {
+      // Calculate a nice scale bar length (target ~10-20% of image width)
+      double imageWidthUm = w * pixelSizeUm_;
+      
+      // Find a nice round number for the scale bar
+      double targetUm = imageWidthUm * 0.15; // 15% of image width
+      double[] niceValues = {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
+      double scaleUm = niceValues[0];
+      for (double v : niceValues) {
+         if (v <= targetUm) {
+            scaleUm = v;
+         } else {
+            break;
+         }
+      }
+
+      int barLengthPx = (int) Math.round(scaleUm / pixelSizeUm_);
+      if (barLengthPx < 20) barLengthPx = 20; // Minimum visible length
+      if (barLengthPx > w - 20) barLengthPx = w - 20; // Max 
+
+      // Position: bottom-right with margin
+      int margin = 15;
+      int barHeight = 6;
+      int barX = w - margin - barLengthPx;
+      int barY = h - margin - barHeight;
+
+      // Format label
+      String label = (scaleUm >= 1000) ? 
+            String.format(java.util.Locale.US, "%.0f mm", scaleUm / 1000) :
+            String.format(java.util.Locale.US, "%.0f µm", scaleUm);
+
+      g2d_.setFont(new Font("SansSerif", Font.BOLD, 14));
+      java.awt.FontMetrics fm = g2d_.getFontMetrics();
+      int labelWidth = fm.stringWidth(label);
+      int labelX = barX + (barLengthPx - labelWidth) / 2;
+      int labelY = barY - 4;
+
+      if (timestampBackground_) {
+         // Draw background for better visibility
+         g2d_.setColor(bgColor);
+         g2d_.fillRect(barX - 5, labelY - fm.getAscent() - 2, 
+               barLengthPx + 10, fm.getHeight() + barHeight + 10);
+      }
+
+      // Draw scale bar
+      g2d_.setColor(shadowColor);
+      g2d_.fillRect(barX + 1, barY + 1, barLengthPx, barHeight);
+      g2d_.setColor(textColor);
+      g2d_.fillRect(barX, barY, barLengthPx, barHeight);
+
+      // Draw label
+      g2d_.setColor(shadowColor);
+      g2d_.drawString(label, labelX + 1, labelY + 1);
+      g2d_.setColor(textColor);
+      g2d_.drawString(label, labelX, labelY);
    }
 
    private String getSettingString(String key, String defaultValue) {
