@@ -94,117 +94,41 @@ Example: `experiment_2304x2304_seg001.mp4`
 ## Testing Protocol
 
 ### Prerequisites
-- [ ] Micro-Manager 2.x installed and working with your camera
-- [ ] FFmpeg installed and accessible
-- [ ] Plugin installed in `mmplugins/` folder
-- [ ] VLC or similar player for verification
+- Micro-Manager 2.x with camera
+- FFmpeg installed
+- Plugin in `mmplugins/` folder
+- VLC for playback verification
 
-### Test 1: Basic Recording (Constant FPS)
-1. Configure plugin with output path and Constant FPS @ 30fps
-2. Set camera exposure to ~33ms (matching 30fps)
-3. Start Live mode
-4. Record for 30 seconds
-5. Stop Live mode
-6. **Verify:** 
-   - [ ] Log shows "FFmpeg finalized successfully"
-   - [ ] File exists with ~900 frames (30fps × 30s)
-   - [ ] Video plays smoothly in VLC
-   - [ ] Δt overlay shows correct elapsed time
+### Verified Tests (2026-01-22)
 
-### Test 2: Fast Camera (Frame Dropping)
-1. Set mode to Constant FPS @ 30fps
-2. Set camera exposure to 10ms (~100fps actual)
-3. Start Live for 10 seconds
-4. **Verify:**
-   - [ ] Output file plays at 30fps (smooth)
-   - [ ] Duration is ~10 seconds
-   - [ ] Some frames were dropped (log shows frame count < actual captures)
+| Test | Mode | Exposure | Duration | Frames | Result |
+|------|------|----------|----------|--------|--------|
+| Basic recording | Constant 30fps | 33ms | 30s | 882 | ✓ Pass |
+| Fast camera | Constant 30fps | 10ms | 9s | 275 | ✓ Frame dropping works |
+| Slow camera | Constant 30fps | 500ms | 11s | 301 | ✓ Frame duplication works |
+| Real-time | VFR | 100ms | 10s | 99 | ✓ 1:1 frame capture |
+| Time-lapse | 10x @30fps | 1000ms | 60s | 178 | ✓ Compression works |
+| Immediate finalization | Any | Any | <1s | 1 | ✓ Event-driven stop |
 
-### Test 3: Slow Camera (Frame Duplication)
-1. Set mode to Constant FPS @ 30fps  
-2. Set camera exposure to 500ms (2fps actual)
-3. Start Live for 10 seconds
-4. **Verify:**
-   - [ ] Output file plays at 30fps (smooth)
-   - [ ] Frames appear duplicated/held (expected)
-   - [ ] Duration is ~10 seconds
+### Remaining Tests
 
-### Test 4: Real-time Mode
-1. Set mode to Real-time
-2. Set camera exposure to 100ms (10fps)
-3. Start Live for 10 seconds
-4. **Verify:**
-   - [ ] Frame count matches actual captures (~100 frames)
-   - [ ] No frame duplication or dropping
-   - [ ] Playback matches real-time timing
+#### Settings Persistence
+- [ ] FFmpeg path, output path, and recording mode persist after restart
 
-### Test 5: Time-lapse Mode
-1. Set mode to Time-lapse @ 10x
-2. Set camera exposure to 1000ms (1fps)
-3. Start Live for 60 seconds
-4. **Verify:**
-   - [ ] Video duration is ~6 seconds (60s / 10x)
-   - [ ] Δt overlay shows real elapsed time (not compressed)
-   - [ ] Playback is accelerated 10×
+#### Resolution Change
+- [ ] Changing ROI/binning mid-session creates new segment file
 
-### Test 6: Immediate Finalization
-1. Start any recording
-2. Click Stop Live
-3. **Verify:**
-   - [ ] Log shows "Live mode stopped - finalizing MP4 immediately"
-   - [ ] File is playable immediately (not corrupted)
-   - [ ] No watchdog timeout needed
+#### MDA Recording
+- [ ] Recording starts/stops with acquisition, log shows "Acquisition ended"
 
-### Test 7: Settings Persistence
-1. Configure all settings
-2. Close and reopen Micro-Manager
-3. **Verify:**
-   - [ ] FFmpeg path persisted
-   - [ ] Output path persisted
-   - [ ] Recording mode persisted
+#### Long Recording (10+ min)
+- [ ] No memory leaks, file grows linearly, playable output
 
-### Test 8: Resolution Change
-1. Start recording at one resolution
-2. Change camera ROI/binning mid-session
-3. **Verify:**
-   - [ ] New segment file created with new resolution
-   - [ ] Both files are valid and playable
+#### Overlay Customization
+- [ ] White/black text with/without background renders correctly
 
-### Test 9: MDA Recording
-1. Configure a simple MDA (e.g., time series, 10 frames, 1s interval)
-2. Start acquisition
-3. **Verify:**
-   - [ ] Recording starts with first frame
-   - [ ] Recording stops when MDA completes
-   - [ ] Log shows "Acquisition ended - finalizing MP4 immediately"
-
-### Test 10: Long Recording Stability
-1. Set Constant FPS @ 30fps
-2. Record continuously for 10+ minutes
-3. **Verify:**
-   - [ ] No memory leaks (check Java heap)
-   - [ ] File size grows linearly
-   - [ ] Final file is playable
-   - [ ] No dropped frames in log
-
-### Test 11: Overlay Customization
-1. Enable timestamp with white text and background
-2. Record for 5 seconds
-3. Change to black text, no background
-4. Record for 5 seconds
-5. **Verify:**
-   - [ ] First video has white text with semi-transparent background
-   - [ ] Second video has black text without background
-   - [ ] Timestamp is readable in both cases
-
-### Test 12: Scale Bar
-1. Configure pixel size in Micro-Manager (Devices → Pixel Size Calibration)
-2. Enable scale bar in plugin settings
-3. Record for 5 seconds
-4. **Verify:**
-   - [ ] Scale bar appears in bottom-right corner
-   - [ ] Label shows correct units (µm or mm)
-   - [ ] Scale bar length is reasonable (~15% of image width)
+#### Scale Bar
+- [ ] Scale bar appears with correct units when pixel size is configured
 
 ## Troubleshooting
 
