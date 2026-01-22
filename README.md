@@ -15,7 +15,7 @@ This plugin eliminates those steps. Common use cases:
 
 For quantitative analysis, you still want raw data. But when morphology and dynamics are what matters — and lossy compression is acceptable — this plugin gets you from Live mode to shareable video in seconds.
 
-**Bit depth conversion:** Scientific cameras typically output 12-bit (e.g., Andor) or 16-bit (e.g., Hamamatsu) images, but video is 8-bit. This plugin uses Micro-Manager's display settings (the brightness/contrast sliders in the Live window) to map your data to 8-bit. What you see is what you get — adjust contrast before recording to optimize the output.
+**Bit depth conversion:** Scientific cameras typically output 8-bit, 12-bit, or 16-bit images, but video is 8-bit. This plugin uses Micro-Manager's display settings (the brightness/contrast sliders in the Live window) to map your data to 8-bit. What you see is what you get, adjust contrast before recording or during, it will work either way.
 
 
 ## Features
@@ -72,13 +72,13 @@ Alternatively, set the full path to `ffmpeg.exe` in the plugin settings.
 
 **Plugins → On-The-Fly Image Processing → Configure Processor Pipeline**
 
-Check the box next to "MP4 Stream" to enable recording.
+Check the box next to "MP4 Stream (FFmpeg)" to enable recording.
 
 > **Note:** This plugin may be merged into Micro-Manager in the future. Until then, download from this repository.
 
 ## Configuration
 
-Click the gear icon (⚙) next to the plugin to open settings:
+Click the Configure... button next to the plugin to open settings:
 
 ### General Settings
 
@@ -116,23 +116,31 @@ All modes output video at the configured **target FPS** (default 30 fps). The mo
 #### Real-time (VFR)
 - Every frame from the camera is written exactly once
 - Playback timing matches actual capture timing
-- **Best for:** Recording at maximum camera speed, preserving every frame
+- **Best for:** Recording at maximum camera speed, preserving every frame (with compression remember)
 
 #### Time-lapse Compression
 - Compresses real time into shorter playback time
 - Factor of 10× means 30 seconds of recording plays in 3 seconds
 - Output FPS is still the target FPS (e.g., 30 fps)
-- **Best for:** Slow cameras with long exposures (100ms+)
+- **Best for:** Long exposures (100ms+), time-lapses.
 
 **Example — Time-lapse 10× with 30 fps output:**
 
-| Camera Speed | 30s Recording | Video Duration | Frames Written |
-|--------------|---------------|----------------|----------------|
-| 1 fps (1000ms) | 30 frames captured | 3 seconds | ~90 (duplicated) |
-| 10 fps (100ms) | 300 frames captured | 3 seconds | ~90 (some dropped) |
-| 100 fps (10ms) | 3000 frames captured | 3 seconds | ~90 (most dropped) |
+| Camera Speed | Real Time | Frames Captured | Video Duration | Frames Written |
+|--------------|-----------|-----------------|----------------|----------------|
+| 1 fps (1000ms) | 30s | 30 | 3s | ~90 (duplicated) |
+| 10 fps (100ms) | 30s | 300 | 3s | ~90 (some dropped) |
+| 100 fps (10ms) | 30s | 3000 | 3s | ~90 (most dropped) |
 
-**Recommendation:** For fast cameras (short exposures), use **Constant FPS** or **Real-time** mode instead of Time-lapse to avoid losing frames.
+**Example — Time-lapse 100× with 30 fps output (6-hour experiment):**
+
+| Camera Speed | Real Time | Frames Captured | Video Duration | Frames Written |
+|--------------|-----------|-----------------|----------------|----------------|
+| 0.1 fps (10s) | 360 min | 2,160 | 3.6 min | ~6,480 (duplicated) |
+| 1 fps (1s) | 360 min | 21,600 | 3.6 min | ~6,480 (some dropped) |
+| 10 fps (100ms) | 360 min | 216,000 | 3.6 min | ~6,480 (most dropped) |
+
+**Recommendation:** For fast cameras (short exposures), use **Constant FPS** or **Real-time** mode instead of Time-lapse to avoid losing frames. 
 
 ## Output Files
 
@@ -186,7 +194,7 @@ Hardware: 1608×1608 resolution, Prior XY stage
 |------|-----------|---------|------------|-----------|--------|--------|
 | Recording + overlay | 10× | 1×1 | 1.12 µm | 200 µm | 115 | ✓ |
 | Resolution change | 10× | 2×2 | 1.12 µm | 100 µm | 136 | ✓ |
-| Objective change | 10× → 50× | 1×1 | 0.22 µm | 50 µm | 82 | ✓ |
+| Objective change | 10× → 40× | 1×1 | 0.22 µm | 50 µm | 82 | ✓ |
 | High magnification | 60× | 2×2 | 0.45 µm | 50 µm | 89 | ✓ |
 | Binning change | 60× | 2×2 | 0.57 µm | 50 µm | 69 | ✓ |
 | 40× no binning | 40× | 1×1 | 0.29 µm | 50 µm | 102 | ✓ |
@@ -215,10 +223,6 @@ To enable debug logging, use Micro-Manager's debug mode or check the CoreLog aft
 - Ensure ffmpeg.exe is on system PATH, or
 - Set explicit path in plugin settings
 
-### Files are 0 bytes or corrupt
-- Check that Live mode was running when recording started
-- Verify FFmpeg path is correct
-- Check Micro-Manager log for errors
 
 ### Playback issues with short videos
 - Videos under 1 second may not play in all players
