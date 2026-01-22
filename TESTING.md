@@ -173,42 +173,52 @@
   - [ ] No errors or crashes
   - [ ] Live view works normally
 
+### Test 17: Objective Change (Scale Bar)
+- [ ] Configure multiple objectives with different pixel sizes in MM
+- [ ] Enable scale bar (auto mode, length=0)
+- [ ] Record with objective A (e.g., 10×), stop Live
+- [ ] Switch to objective B with different magnification (e.g., 40×)
+- [ ] Start Live, record again
+- [ ] **Verify:**
+  - [ ] Scale bar label changes appropriately (e.g., 200 µm → 50 µm)
+  - [ ] Log shows different pixelSize values for each segment
+  - [ ] Both videos have correct scale bars
+
+### Test 18: Binning Change
+- [ ] Start recording at 1×1 binning (full resolution)
+- [ ] Stop Live
+- [ ] Change camera binning to 2×2
+- [ ] Start Live, record again
+- [ ] **Verify:**
+  - [ ] New segment created with smaller resolution (e.g., 1608×1608 → 804×804)
+  - [ ] Scale bar adjusts for binned image width
+  - [ ] Both files are valid
+
 ---
 
 ## Results Summary
 
 | Test | Pass | Fail | Notes |
 |------|:----:|:----:|-------|
-| 1. Basic Recording | | | |
-| 2. Fast Camera | | | |
-| 3. Slow Camera | | | |
-| 4. Real-time Mode | | | |
-| 5. Time-lapse Mode | | | |
-| 6. Immediate Finalization | | | |
-| 7. Timestamp Overlay | | | |
-| 8. Timestamp Colors | | | |
-| 9. Scale Bar | | | |
+| 1. Basic Recording | ✓ | | Demo, ORCA-Fusion, Prime 95B |
+| 2. Fast Camera | ✓ | | Demo, ORCA-Fusion |
+| 3. Slow Camera | ✓ | | Demo, ORCA-Fusion |
+| 4. Real-time Mode | ✓ | | Demo, ORCA-Fusion |
+| 5. Time-lapse Mode | ✓ | | Demo, ORCA-Fusion |
+| 6. Immediate Finalization | ✓ | | Demo |
+| 7. Timestamp Overlay | ✓ | | ORCA-Fusion, Prime 95B |
+| 8. Timestamp Colors | ✓ | | ORCA-Fusion (white/black) |
+| 9. Scale Bar | ✓ | | Multiple objectives, auto-scaling |
 | 10. Scale Bar No Pixel | | | |
-| 11. Settings Persistence | | | |
+| 11. Settings Persistence | ✓ | | All settings verified |
 | 12. Settings Apply | | | |
-| 13. Resolution Change | | | |
+| 13. Resolution Change | ✓ | | Prime 95B via binning |
 | 14. Long Recording | | | |
-| 15. Rapid Start/Stop | | | |
+| 15. Rapid Start/Stop | ✓ | | Prime 95B (frankenscope log) |
 | 16. No Output Path | | | |
+| 17. Objective Change | ✓ | | Prime 95B: 10×→40× |
+| 18. Binning Change | ✓ | | Prime 95B: 1×1→2×2 |
 
-**Overall Result:** _______________
-
----
-
-## Issues Found
-
-| # | Description | Severity | Status |
-|---|-------------|----------|--------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-
----
 
 ## Notes
 
