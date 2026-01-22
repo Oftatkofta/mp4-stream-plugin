@@ -162,6 +162,19 @@ Hardware: 2304×2304 resolution, pixel size 0.1091 µm
 | Time-lapse | 10x @30fps | 179 | ✓ Compression |
 | Overlay | Scale bar + timestamp | 9 | ✓ White/black text |
 
+**Real Microscope — Photometrics Prime 95B** (MM Studio 2.0.3 nightly 20251006, MMCore 11.11.0)
+
+Hardware: 1608×1608 resolution, Prior XY stage
+
+| Test | Objective | Binning | Pixel Size | Scale Bar | Frames | Result |
+|------|-----------|---------|------------|-----------|--------|--------|
+| Recording + overlay | 10× | 1×1 | 1.12 µm | 200 µm | 115 | ✓ |
+| Resolution change | 10× | 2×2 | 1.12 µm | 100 µm | 136 | ✓ |
+| Objective change | 10× → 50× | 1×1 | 0.22 µm | 50 µm | 82 | ✓ |
+| High magnification | 60× | 2×2 | 0.45 µm | 50 µm | 89 | ✓ |
+| Binning change | 60× | 2×2 | 0.57 µm | 50 µm | 69 | ✓ |
+| 40× no binning | 40× | 1×1 | 0.29 µm | 50 µm | 102 | ✓ |
+
 ## Logging & Debugging
 
 The plugin logs to the Micro-Manager CoreLog (`Help → View Core Log...`).
