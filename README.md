@@ -162,6 +162,24 @@ Hardware: Thorlabs XY stage, Thorlabs DC4100 LED, pixel size 0.1091 µm
 | Time-lapse | 10x @30fps | 179 | ✓ Compression |
 | Overlay | Scale bar + timestamp | 9 | ✓ White/black text |
 
+## Logging & Debugging
+
+The plugin logs to the Micro-Manager CoreLog (`Help → View Core Log...`).
+
+**Log Levels:**
+- `[IFO]` — Important events: recording start/stop, finalization
+- `[dbg]` — Debug details: FFmpeg command, overlay settings, scaling changes
+
+**Example log output:**
+```
+[IFO,App] [MP4Stream] Starting FFmpeg: output_2304x2304_seg001.mp4 (2304x2304, constant @30.0 fps)
+[dbg,App] [MP4Stream] Overlay settings: timestamp=true (color=white, bg=true, font=18px), scalebar=true
+[IFO,App] [MP4Stream] Live mode stopped - finalizing MP4 immediately.
+[IFO,App] [MP4Stream] FFmpeg finalized successfully (856 frames written).
+```
+
+To enable debug logging, use Micro-Manager's debug mode or check the CoreLog after recording.
+
 ## Troubleshooting
 
 ### "FFmpeg not found"
