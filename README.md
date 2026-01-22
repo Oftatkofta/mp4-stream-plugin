@@ -97,7 +97,9 @@ Example: `experiment_2304x2304_seg001.mp4`
 
 See [TESTING.md](TESTING.md) for comprehensive test checklist.
 
-### Verified (2026-01-22, Demo Camera)
+### Verified (2026-01-22)
+
+**Demo Camera (512×512)**
 
 | Test | Mode | Exposure | Frames | Result |
 |------|------|----------|--------|--------|
@@ -107,6 +109,19 @@ See [TESTING.md](TESTING.md) for comprehensive test checklist.
 | Real-time | VFR | 100ms | 99 | ✓ 1:1 capture |
 | Time-lapse | 10x @30fps | 1000ms | 178 | ✓ Compression |
 | Immediate finalization | Any | Any | 1 | ✓ Event-driven |
+
+**Real Microscope — Hamamatsu ORCA-Fusion (2304×2304)**
+
+Hardware: Thorlabs XY stage, Thorlabs DC4100 LED, pixel size 0.1091 µm
+
+| Test | Mode | Frames | Result |
+|------|------|--------|--------|
+| Basic recording | Constant 30fps | 856 | ✓ |
+| Fast camera | Constant 30fps | 249 | ✓ Frame dropping |
+| Slow camera (500ms) | Constant 30fps | 271 | ✓ Frame duplication |
+| Real-time (100ms) | VFR | 58 | ✓ 1:1 capture |
+| Time-lapse | 10x @30fps | 179 | ✓ Compression |
+| Overlay | Scale bar + timestamp | 9 | ✓ White/black text |
 
 ## Troubleshooting
 
