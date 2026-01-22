@@ -17,7 +17,7 @@ For quantitative analysis, you still want raw data. But when morphology and dyna
 
 **Bit depth conversion:** Scientific cameras output 12-bit or 16-bit images, but video is 8-bit. This plugin uses Micro-Manager's display settings (the brightness/contrast sliders) to map your data to 8-bit. What you see is what you get — adjust contrast before or during recording.
 
-**Important:** This plugin records the Live view only — the single-channel grayscale image currently displayed. Not for multi-channel acquisitions or MDA. Ideal for transmitted light (brightfield, phase contrast, DIC) or single-channel fluorescence. Output is always grayscale regardless of LUT.
+**Important:** This plugin records the Live view only: the single-channel grayscale image currently displayed. Not for multi-channel acquisitions or MDA. Ideal for transmitted light (brightfield, phase contrast, DIC) or single-channel fluorescence. Output is always grayscale regardless of LUT.
 
 ## Features
 
@@ -97,7 +97,7 @@ Click the Configure... button next to the plugin to open settings:
 
 | Setting | Description |
 |---------|-------------|
-| **Show timestamp (Δt)** | Enable/disable elapsed time overlay in top-left corner |
+| **Show timestamp (Δt)** | Elapsed time overlay (top-left) |
 | **Text color** | White or Black text color |
 | **Font size** | Overlay text size in pixels (8-72, default 18) |
 | **Contrasting background** | Adds semi-transparent background box behind text for readability |
@@ -119,7 +119,7 @@ All modes output video at the configured **target FPS** (default 30 fps). The mo
 #### Real-time (VFR)
 - Every frame from the camera is written exactly once
 - Playback timing matches actual capture timing
-- **Best for:** Recording at maximum camera speed, preserving every frame (with compression remember)
+- **Best for:** Recording at maximum camera speed while preserving every frame
 
 #### Time-lapse Compression
 - Compresses real time into shorter playback time
@@ -225,7 +225,6 @@ To enable debug logging, use Micro-Manager's debug mode or check the CoreLog aft
 ### "FFmpeg not found"
 - Ensure ffmpeg.exe is on system PATH, or
 - Set explicit path in plugin settings
-
 
 ### Playback issues with short videos
 - Videos under 1 second may not play in all players
