@@ -91,41 +91,20 @@ Example: `experiment_2304x2304_seg001.mp4`
 - New segment starts if resolution changes mid-session
 - Each Live start/stop creates a new segment
 
-## Testing Protocol
+## Testing
 
-### Prerequisites
-- Micro-Manager 2.x with camera
-- FFmpeg installed
-- Plugin in `mmplugins/` folder
-- VLC for playback verification
+See [TESTING.md](TESTING.md) for comprehensive test checklist.
 
-### Verified Tests (2026-01-22)
+### Verified (2026-01-22, Demo Camera)
 
-| Test | Mode | Exposure | Duration | Frames | Result |
-|------|------|----------|----------|--------|--------|
-| Basic recording | Constant 30fps | 33ms | 30s | 882 | ✓ Pass |
-| Fast camera | Constant 30fps | 10ms | 9s | 275 | ✓ Frame dropping works |
-| Slow camera | Constant 30fps | 500ms | 11s | 301 | ✓ Frame duplication works |
-| Real-time | VFR | 100ms | 10s | 99 | ✓ 1:1 frame capture |
-| Time-lapse | 10x @30fps | 1000ms | 60s | 178 | ✓ Compression works |
-| Immediate finalization | Any | Any | <1s | 1 | ✓ Event-driven stop |
-
-### Remaining Tests
-
-#### Settings Persistence
-- [ ] FFmpeg path, output path, and recording mode persist after restart
-
-#### Resolution Change
-- [ ] Changing ROI/binning mid-session creates new segment file
-
-#### Long Recording (10+ min)
-- [ ] No memory leaks, file grows linearly, playable output
-
-#### Overlay Customization
-- [ ] White/black text with/without background renders correctly
-
-#### Scale Bar
-- [ ] Scale bar appears with correct units when pixel size is configured
+| Test | Mode | Exposure | Frames | Result |
+|------|------|----------|--------|--------|
+| Basic recording | Constant 30fps | 33ms | 882 | ✓ |
+| Fast camera | Constant 30fps | 10ms | 275 | ✓ Frame dropping |
+| Slow camera | Constant 30fps | 500ms | 301 | ✓ Frame duplication |
+| Real-time | VFR | 100ms | 99 | ✓ 1:1 capture |
+| Time-lapse | 10x @30fps | 1000ms | 178 | ✓ Compression |
+| Immediate finalization | Any | Any | 1 | ✓ Event-driven |
 
 ## Troubleshooting
 
