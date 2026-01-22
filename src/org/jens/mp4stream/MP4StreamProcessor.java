@@ -27,6 +27,10 @@ import org.micromanager.display.ChannelDisplaySettings;
 import org.micromanager.display.ComponentDisplaySettings;
 import org.micromanager.display.DisplaySettings;
 import org.micromanager.display.DisplayWindow;
+import org.micromanager.events.LiveModeEvent;
+import org.micromanager.acquisition.AcquisitionEndedEvent;
+
+import com.google.common.eventbus.Subscribe;
 
 // Note: Processor API is deprecated in MM 2.0 but remains the required
 // extension point for image processors. This is expected, but gives a compiler warning
@@ -84,6 +88,9 @@ public final class MP4StreamProcessor implements Processor {
    private volatile long lastFrameNanos_ = 0L; // updated after each encoded frame
    private volatile Thread watchdog_ = null;
    private volatile boolean watchdogRun_ = false;
+
+   // Event listener registration tracking
+   private volatile boolean eventsRegistered_ = false;
 
    // Rate limiting (avoid heavy core calls / log spam)
    private volatile long lastWdUpdateNanos_ = 0L;
@@ -291,6 +298,48 @@ public final class MP4StreamProcessor implements Processor {
       disposeOverlay();
    }
 
+   // --- Event handlers for immediate finalization ---
+
+   @Subscribe
+   public void onLiveModeEvent(LiveModeEvent event) {
+      if (!event.isOn() && ff_ != null) {
+         logInfo_("Live mode stopped - finalizing MP4 immediately.");
+         stopFfmpeg();
+      }
+   }
+
+   @Subscribe
+   public void onAcquisitionEnded(AcquisitionEndedEvent event) {
+      if (ff_ != null) {
+         logInfo_("Acquisition ended - finalizing MP4 immediately.");
+         stopFfmpeg();
+      }
+   }
+
+   private void registerForEvents() {
+      if (studio_ != null && !eventsRegistered_) {
+         try {
+            studio_.events().registerForEvents(this);
+            eventsRegistered_ = true;
+            logDebug_("Registered for Live/Acquisition events.");
+         } catch (Exception e) {
+            logWarn_("Failed to register for events: " + e.getMessage());
+         }
+      }
+   }
+
+   private void unregisterForEvents() {
+      if (studio_ != null && eventsRegistered_) {
+         try {
+            studio_.events().unregisterForEvents(this);
+            eventsRegistered_ = false;
+            logDebug_("Unregistered from Live/Acquisition events.");
+         } catch (Exception e) {
+            logWarn_("Failed to unregister from events: " + e.getMessage());
+         }
+      }
+   }
+
    private void recordFrameIfConfigured(Image img) throws IOException {
       final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
       if (outPath == null || outPath.trim().isEmpty()) {
@@ -453,6 +502,9 @@ public final class MP4StreamProcessor implements Processor {
       lastFrameNanos_ = System.nanoTime();
       updateWatchdogFromExposureRateLimited_(); // immediate update on start
       startWatchdog();
+
+      // Register for Live/Acquisition events to finalize immediately when they stop
+      registerForEvents();
    }
 
    private void initTimeZero(Image img) {
@@ -619,6 +671,10 @@ public final class MP4StreamProcessor implements Processor {
                   continue;
                }
 
+               // Note: Live/MDA stop detection is now handled by event listeners
+               // (onLiveModeEvent, onAcquisitionEnded) for immediate response.
+               // Watchdog only handles timeout (no frames received for too long).
+
                final long last = lastFrameNanos_;
                if (last == 0L) {
                   continue; // not armed
@@ -631,6 +687,7 @@ public final class MP4StreamProcessor implements Processor {
 
                if (idleNanos > timeoutNanos) {
                   // stopFfmpeg() is idempotent.
+                  logInfo_("Watchdog timeout - finalizing MP4.");
                   stopFfmpeg();
                   // Disarm to prevent repeated stop attempts before ff_ becomes visible as null everywhere.
                   lastFrameNanos_ = 0L;
@@ -681,6 +738,9 @@ public final class MP4StreamProcessor implements Processor {
          toClose = ff_;
          ff_ = null;
       }
+
+      // Unregister from events since we're no longer recording
+      unregisterForEvents();
 
       // Close outside lock to avoid blocking producers/watchdog while ffmpeg finalizes.
       logDebug_("Stopping FFmpeg and finalizing MP4 file...");
