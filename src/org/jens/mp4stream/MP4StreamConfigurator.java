@@ -207,14 +207,29 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
          rbConstant.setSelected(true);
       }
 
-      // Enable/disable spinners based on mode
+      // Helper to save mode settings immediately to preferences
+      Runnable saveModeToPrefs = () -> {
+         String mode = rbRealtime.isSelected() ? MODE_REALTIME :
+                       rbTimelapse.isSelected() ? MODE_TIMELAPSE : MODE_CONSTANT_FPS;
+         PREFS.put(KEY_RECORDING_MODE, mode);
+         PREFS.putDouble(KEY_TARGET_FPS, (Double) fpsSpinner.getValue());
+         PREFS.putDouble(KEY_TIMELAPSE_FACTOR, (Double) tlSpinner.getValue());
+      };
+
+      // Enable/disable spinners based on mode, and save immediately
       Runnable updateSpinners = () -> {
          fpsSpinner.setEnabled(rbConstant.isSelected());
          tlSpinner.setEnabled(rbTimelapse.isSelected());
+         saveModeToPrefs.run(); // Save mode immediately when changed
       };
       rbConstant.addActionListener(e -> updateSpinners.run());
       rbRealtime.addActionListener(e -> updateSpinners.run());
       rbTimelapse.addActionListener(e -> updateSpinners.run());
+
+      // Also save immediately when spinner values change
+      fpsSpinner.addChangeListener(e -> saveModeToPrefs.run());
+      tlSpinner.addChangeListener(e -> saveModeToPrefs.run());
+
       updateSpinners.run();
 
       gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 3;

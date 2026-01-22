@@ -480,9 +480,9 @@ public final class MP4StreamProcessor implements Processor {
          effectiveFps = 30.0; // Base rate for VFR container
          modeDescription = "realtime/VFR";
       } else if (MP4StreamConfigurator.MODE_TIMELAPSE.equals(recordingMode_)) {
-         // Timelapse: output at target FPS, but time is compressed
+         // Timelapse: output at target FPS, playback is sped up by factor
          effectiveFps = targetFps_;
-         modeDescription = String.format(java.util.Locale.US, "timelapse %.1fx @%.1f fps", 
+         modeDescription = String.format(java.util.Locale.US, "timelapse %.0fx speed @%.0f fps", 
                timelapseFactor_, targetFps_);
       } else {
          // Constant FPS (default)
@@ -590,8 +590,8 @@ public final class MP4StreamProcessor implements Processor {
             ff_.writeFrame(frame8);
             vfrFrameCount_++;
          } else if (MP4StreamConfigurator.MODE_TIMELAPSE.equals(recordingMode_)) {
-            // Timelapse mode: compress time by factor, then use CFR logic
-            double compressedDtSec = dtSec * timelapseFactor_;
+            // Timelapse mode: compress playback time by factor (10x = plays 10x faster)
+            double compressedDtSec = dtSec / timelapseFactor_;
             writeCfrFrame(frame8, w, h, dtSec, compressedDtSec);
          } else {
             // Constant FPS mode (default): CFR with real time
