@@ -58,11 +58,18 @@ public final class MP4StreamProcessor implements Processor {
    private volatile FfmpegSession ff_ = null;
    private int segmentIndex_ = 0;
 
-   // Constant-FPS output
-   private static final double TARGET_FPS = 30.0;
+   // Recording mode (loaded from settings)
+   private String recordingMode_ = MP4StreamConfigurator.MODE_CONSTANT_FPS;
+   private double targetFps_ = MP4StreamConfigurator.DEFAULT_TARGET_FPS;
+   private double timelapseFactor_ = MP4StreamConfigurator.DEFAULT_TIMELAPSE_FACTOR;
+
+   // CFR (Constant Frame Rate) output state
    private long nextOutFrameIndex_ = 0;
    private boolean haveLastFrame_ = false;
    private byte[] lastFrame8_ = null;
+
+   // VFR (Variable Frame Rate / Realtime) frame counter
+   private long vfrFrameCount_ = 0;
 
    // Timing for Δt overlay
    private boolean t0IsElapsedMs_ = false;
@@ -386,8 +393,8 @@ public final class MP4StreamProcessor implements Processor {
       // Δt overlay: prefer elapsed time, else received time, else wall clock.
       double dtSec = computeDeltaTSeconds(img);
 
-      // Write exactly once using CFR path
-      writeCfrFrameLocked(plane8_, w, h, dtSec);
+      // Write frame using configured recording mode
+      writeFrameWithMode(plane8_, w, h, dtSec);
    }
 
    private boolean shouldRecordNow() {
@@ -451,11 +458,37 @@ public final class MP4StreamProcessor implements Processor {
       height_ = h;
       segmentIndex_++;
 
+      // Load recording mode settings
+      recordingMode_ = getSettingString(MP4StreamConfigurator.KEY_RECORDING_MODE, 
+            MP4StreamConfigurator.MODE_CONSTANT_FPS);
+      targetFps_ = getSettingDouble(MP4StreamConfigurator.KEY_TARGET_FPS, 
+            MP4StreamConfigurator.DEFAULT_TARGET_FPS);
+      timelapseFactor_ = getSettingDouble(MP4StreamConfigurator.KEY_TIMELAPSE_FACTOR, 
+            MP4StreamConfigurator.DEFAULT_TIMELAPSE_FACTOR);
+
       // MP4 cannot change resolution mid-stream. Segment output to new file.
       final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
 
       final String ffmpegPath = getSettingString(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
+
+      // Determine effective output FPS based on mode
+      double effectiveFps;
+      String modeDescription;
+      if (MP4StreamConfigurator.MODE_REALTIME.equals(recordingMode_)) {
+         // VFR mode: use reasonable default, actual timing handled via VFR
+         effectiveFps = 30.0; // Base rate for VFR container
+         modeDescription = "realtime/VFR";
+      } else if (MP4StreamConfigurator.MODE_TIMELAPSE.equals(recordingMode_)) {
+         // Timelapse: output at target FPS, but time is compressed
+         effectiveFps = targetFps_;
+         modeDescription = String.format(java.util.Locale.US, "timelapse %.1fx @%.1f fps", 
+               timelapseFactor_, targetFps_);
+      } else {
+         // Constant FPS (default)
+         effectiveFps = targetFps_;
+         modeDescription = String.format(java.util.Locale.US, "constant @%.1f fps", targetFps_);
+      }
 
       // Build FFmpeg command as cmd-list
       List<String> cmd = new ArrayList<>();
@@ -465,8 +498,8 @@ public final class MP4StreamProcessor implements Processor {
       cmd.add("-pix_fmt"); cmd.add("gray"); // pixel format
       cmd.add("-s"); cmd.add(w + "x" + h); // size
 
-      String fps = String.format(java.util.Locale.US, "%.3f", TARGET_FPS);
-      cmd.add("-r"); cmd.add(fps); // frame rate
+      String fpsStr = String.format(java.util.Locale.US, "%.3f", effectiveFps);
+      cmd.add("-r"); cmd.add(fpsStr); // frame rate
       cmd.add("-i"); cmd.add("-"); // input from stdin
 
       // video encoding (CPU-only)
@@ -478,7 +511,7 @@ public final class MP4StreamProcessor implements Processor {
 
       cmd.add(segPath); // output file name
 
-      logInfo_("Starting FFmpeg: " + segPath + " (" + w + "x" + h + " @" + fps + " fps)");
+      logInfo_("Starting FFmpeg: " + segPath + " (" + w + "x" + h + ", " + modeDescription + ")");
       logDebug_("FFmpeg command: " + cmd);
 
       synchronized (ffLock_) {
@@ -489,6 +522,7 @@ public final class MP4StreamProcessor implements Processor {
       nextOutFrameIndex_ = 0;
       haveLastFrame_ = false;
       lastFrame8_ = null;
+      vfrFrameCount_ = 0;
 
       // Reset scaling tracking for new segment (will log on first frame)
       lastScaling_ = null;
@@ -541,11 +575,8 @@ public final class MP4StreamProcessor implements Processor {
    }
    
 
-   private void writeCfrFrameLocked(byte[] frame8, int w, int h, double dtSec) throws IOException {
-      long targetIndex = (long) Math.floor((dtSec * TARGET_FPS) + 1e-9);
-
+   private void writeFrameWithMode(byte[] frame8, int w, int h, double dtSec) throws IOException {
       // Update activity marker for watchdog BEFORE write attempt
-      // (so watchdog knows we're processing frames even if write fails)
       lastFrameNanos_ = System.nanoTime();
 
       synchronized (ffLock_) {
@@ -553,35 +584,54 @@ public final class MP4StreamProcessor implements Processor {
             return;
          }
 
-         if (lastFrame8_ == null || lastFrame8_.length != frame8.length) {
-            lastFrame8_ = new byte[frame8.length];
-            haveLastFrame_ = false;
-         }
-
-         // Fill gaps using last frame (CFR)
-         if (haveLastFrame_) {
-            while (nextOutFrameIndex_ < targetIndex) {
-               ff_.writeFrame(lastFrame8_);
-               nextOutFrameIndex_++;
-            }
-         } else {
-            nextOutFrameIndex_ = targetIndex;
-         }
-
-         // Write at target index
-         if (nextOutFrameIndex_ == targetIndex) {
-            // Overlay is drawn in-place into frame8. If you need to preserve the original,
-            // copy into a working buffer first.
+         if (MP4StreamConfigurator.MODE_REALTIME.equals(recordingMode_)) {
+            // VFR mode: write every frame exactly once
             overlayDeltaT(frame8, w, h, dtSec);
-
             ff_.writeFrame(frame8);
+            vfrFrameCount_++;
+         } else if (MP4StreamConfigurator.MODE_TIMELAPSE.equals(recordingMode_)) {
+            // Timelapse mode: compress time by factor, then use CFR logic
+            double compressedDtSec = dtSec * timelapseFactor_;
+            writeCfrFrame(frame8, w, h, dtSec, compressedDtSec);
+         } else {
+            // Constant FPS mode (default): CFR with real time
+            writeCfrFrame(frame8, w, h, dtSec, dtSec);
+         }
+      }
+   }
+
+   // CFR (Constant Frame Rate) helper - duplicates/drops frames to match target FPS
+   private void writeCfrFrame(byte[] frame8, int w, int h, double overlayDtSec, double framingDtSec) 
+         throws IOException {
+      // framingDtSec determines which frame index this belongs to
+      // overlayDtSec is displayed in the overlay (can differ in timelapse mode)
+      long targetIndex = (long) Math.floor((framingDtSec * targetFps_) + 1e-9);
+
+      if (lastFrame8_ == null || lastFrame8_.length != frame8.length) {
+         lastFrame8_ = new byte[frame8.length];
+         haveLastFrame_ = false;
+      }
+
+      // Fill gaps using last frame (CFR)
+      if (haveLastFrame_) {
+         while (nextOutFrameIndex_ < targetIndex) {
+            ff_.writeFrame(lastFrame8_);
             nextOutFrameIndex_++;
          }
-         
-         // Always update last frame (whether written or dropped)
-         System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
-         haveLastFrame_ = true;
+      } else {
+         nextOutFrameIndex_ = targetIndex;
       }
+
+      // Write at target index
+      if (nextOutFrameIndex_ == targetIndex) {
+         overlayDeltaT(frame8, w, h, overlayDtSec);
+         ff_.writeFrame(frame8);
+         nextOutFrameIndex_++;
+      }
+      
+      // Always update last frame (whether written or dropped)
+      System.arraycopy(frame8, 0, lastFrame8_, 0, frame8.length);
+      haveLastFrame_ = true;
    }
 
    private static String formatElapsedHhMmSsMmm(double dtSec) {
@@ -751,10 +801,12 @@ public final class MP4StreamProcessor implements Processor {
       unregisterForEvents();
 
       // Close outside lock to avoid blocking producers/watchdog while ffmpeg finalizes.
-      logDebug_("Stopping FFmpeg and finalizing MP4 file...");
+      long frameCount = MP4StreamConfigurator.MODE_REALTIME.equals(recordingMode_) 
+            ? vfrFrameCount_ : nextOutFrameIndex_;
+      logDebug_("Stopping FFmpeg and finalizing MP4 file (" + frameCount + " frames)...");
       try {
          toClose.close();
-         logInfo_("FFmpeg finalized successfully.");
+         logInfo_("FFmpeg finalized successfully (" + frameCount + " frames written).");
       } catch (Exception e) {
          logWarn_("FFmpeg close failed (ignored): " + e.getMessage());
       }
@@ -895,6 +947,24 @@ public final class MP4StreamProcessor implements Processor {
       // Fallback to Preferences (keeps behavior working even if settings_ is null)
       try {
          return PREFS.get(key, defaultValue);
+      } catch (Exception ignored) {
+         return defaultValue;
+      }
+   }
+
+   private double getSettingDouble(String key, double defaultValue) {
+      try {
+         if (settings_ != null) {
+            double v = settings_.getDouble(key, Double.NaN);
+            if (!Double.isNaN(v)) {
+               return v;
+            }
+         }
+      } catch (Exception ignored) {}
+
+      // Fallback to Preferences
+      try {
+         return PREFS.getDouble(key, defaultValue);
       } catch (Exception ignored) {
          return defaultValue;
       }
