@@ -1,6 +1,22 @@
 # MP4 Stream — Micro-Manager 2.x Processor Plugin
 
-**Purpose:** Record grayscale scientific camera frames to MP4 video using CPU-only H.264 encoding (libx264), with an optional Δt timestamp overlay.
+**Purpose:** Record grayscale scientific camera frames to MP4 video using CPU-only H.264 encoding (libx264), with optional timestamp and scale bar overlays.
+
+## Why?
+
+The traditional workflow for creating videos from microscopy is tedious:
+µManager → TIFF stack → ImageJ/Fiji → adjust contrast → export → FFmpeg → finally MP4.
+
+This plugin eliminates those steps. Common use cases:
+
+- **Quick demos** — Show a colleague what's happening on the scope right now
+- **Presentations** — Get a polished video for PowerPoint/Keynote without post-processing
+- **Teaching** — Record live demonstrations for students
+
+For quantitative analysis, you still want raw data. But when morphology and dynamics are what matters — and lossy compression is acceptable — this plugin gets you from Live mode to shareable video in seconds.
+
+**Bit depth conversion:** Scientific cameras typically output 12-bit (e.g., Andor) or 16-bit (e.g., Hamamatsu) images, but video is 8-bit. This plugin uses Micro-Manager's display settings (the brightness/contrast sliders in the Live window) to map your data to 8-bit. What you see is what you get — adjust contrast before recording to optimize the output.
+
 
 ## Features
 
