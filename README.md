@@ -15,7 +15,7 @@
   - **Δt timestamp** — Shows elapsed time (HH:MM:SS.mmm) in top-left corner
   - **Scale bar** — Automatic scale bar in bottom-right (uses pixel size from MM config)
   - **Text color** — White or black text with optional contrasting background
-- **Immediate finalization** — MP4 closes properly when Live/MDA stops (event-driven)
+- **Immediate finalization** — MP4 closes properly when Live mode stops (event-driven)
 - **Watchdog timeout** — Finalizes recording if no frames arrive (prevents hung sessions)
 
 ## Requirements
@@ -118,9 +118,6 @@ Example: `experiment_2304x2304_seg001.mp4`
 #### Resolution Change
 - [ ] Changing ROI/binning mid-session creates new segment file
 
-#### MDA Recording
-- [ ] Recording starts/stops with acquisition, log shows "Acquisition ended"
-
 #### Long Recording (10+ min)
 - [ ] No memory leaks, file grows linearly, playable output
 
@@ -137,7 +134,7 @@ Example: `experiment_2304x2304_seg001.mp4`
 - Set explicit path in plugin settings
 
 ### Files are 0 bytes or corrupt
-- Check that Live/MDA was running when recording started
+- Check that Live mode was running when recording started
 - Verify FFmpeg path is correct
 - Check Micro-Manager log for errors
 
@@ -172,8 +169,8 @@ ffmpeg -y -f rawvideo -pix_fmt gray -s WxH -r FPS -i -
 Code follows [Micro-Manager Coding Style and Conventions](https://micro-manager.org/Micro-Manager_Coding_Style_and_Conventions).
 
 ### Event Handling
-- Subscribes to `LiveModeEvent` and `AcquisitionEndedEvent`
-- Finalizes MP4 immediately when Live/MDA stops
+- Subscribes to `LiveModeEvent` for immediate finalization
+- Finalizes MP4 immediately when Live mode stops
 - Watchdog thread provides backup timeout
 
 ## License
