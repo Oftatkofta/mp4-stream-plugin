@@ -2,12 +2,21 @@
 /build/classes/
 /build/org/
 /dist/
+*.class
 
-# IDE
-/.classpath
-/.project
-/.settings/
+# IDE — Eclipse
+.classpath
+.project
+.settings/
+
+# IDE — IntelliJ IDEA
+.idea/
+*.iml
+
+# IDE — VS Code
 .vscode/
+
+# Maven (for IDE linter only, not used for builds)
 pom.xml
 
 # OS
