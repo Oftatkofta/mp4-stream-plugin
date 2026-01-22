@@ -134,7 +134,9 @@ See [TESTING.md](TESTING.md) for comprehensive test checklist.
 
 ### Verified (2026-01-22)
 
-Tested with **MM Studio 2.0.3** (nightly 20260116), **MMCore 11.11.0**, Java 11.0.27
+Tested on **Windows 11** with **MM Studio 2.0.3** (nightly 20260116), **MMCore 11.11.0**, Java 11.0.27
+
+> **Note:** Testing has only been performed on Windows 11. macOS/Linux users may encounter platform-specific issues — please report them.
 
 **Demo Camera (512×512)**
 
@@ -208,7 +210,9 @@ Code follows [Micro-Manager Coding Style and Conventions](https://micro-manager.
 
 ## License
 
-Copyright (c) 2026 — See source files for details.
+Copyright (c) 2026 Jens Eriksson
+
+Licensed under the BSD 3-Clause License. See [LICENSE](LICENSE) file.
 
 ## Contributing
 
