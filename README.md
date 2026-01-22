@@ -73,8 +73,9 @@ Alternatively, set the full path to `ffmpeg.exe` in the plugin settings.
 
 **Plugins → On-The-Fly Image Processing → Configure Processor Pipeline**
 
-Check the box next to "MP4 Stream (FFmpeg)" to enable recording.
+Check the box under "Enabled" next to "MP4 Stream (FFmpeg)" to enable recording.
 
+The **Snap/Live** toggle controls when the plugin processes images. Set it to **Live** or **Both** — the plugin only records during Live mode, so "Snap only" effectively disables recording.
 
 ![Plugin Settings](images/settings-panel.png)
 > **Note:** My dream is for this plugin to be merged into Micro-Manager in the future. Until then, download from this repository.
@@ -98,7 +99,7 @@ Click the Configure... button next to the plugin to open settings:
 | Setting | Description |
 |---------|-------------|
 | **Show timestamp (Δt)** | Elapsed time overlay (top-left) |
-| **Text color** | White or Black text color |
+| **Text color** | White or black |
 | **Font size** | Overlay text size in pixels (8-72, default 18) |
 | **Contrasting background** | Adds semi-transparent background box behind text for readability |
 | **Show scale bar** | Draws a scale bar in bottom-right corner (requires pixel size to be configured in MM) |
@@ -125,7 +126,7 @@ All modes output video at the configured **target FPS** (default 30 fps). The mo
 - Compresses real time into shorter playback time
 - Factor of 10× means 30 seconds of recording plays in 3 seconds
 - Output FPS is still the target FPS (e.g., 30 fps)
-- **Best for:** Long exposures (100ms+), time-lapses.
+- **Best for:** Long exposures (100ms+), time-lapses
 
 **Example — Time-lapse 10× with 30 fps output:**
 
