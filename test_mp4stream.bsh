@@ -1,0 +1,77 @@
+// MP4Stream Plugin Test Script
+// Run via: Tools → Script Panel → Load and Run
+//
+// Prerequisites:
+// 1. Enable MP4Stream in Processor Pipeline (Plugins → On-The-Fly Image Processing)
+// 2. Configure output path in plugin settings
+// 3. Ensure pixel size calibration is configured for objective change test
+
+// Helper function to wait
+void sleep(int ms) {
+   Thread.sleep(ms);
+}
+
+// Helper to run live for N seconds
+void recordFor(int seconds) {
+   mm.live().setLiveModeOn(true);
+   sleep(seconds * 1000);
+   mm.live().setLiveModeOn(false);
+   sleep(500); // Wait for finalization
+}
+
+print("=== MP4Stream Plugin Test Suite ===\n");
+print("IMPORTANT: Enable MP4Stream in Processor Pipeline before running.\n");
+
+// Test 1: Basic Recording (2 seconds)
+print("Test 1: Basic Recording...");
+mm.core().setExposure(33);
+recordFor(2);
+print("  Done. Check output folder for seg file.\n");
+
+// Test 2: Fast Camera (frame dropping)
+print("Test 2: Fast Camera (10ms exposure)...");
+mm.core().setExposure(10);
+recordFor(2);
+print("  Done. Expect fewer frames written than captured.\n");
+
+// Test 3: Slow Camera (frame duplication)
+print("Test 3: Slow Camera (500ms exposure)...");
+mm.core().setExposure(500);
+recordFor(3);
+print("  Done. Expect frame duplication in output.\n");
+
+// Test 4: Rapid Start/Stop
+print("Test 4: Rapid Start/Stop (5 quick cycles)...");
+mm.core().setExposure(33);
+for (int i = 0; i < 5; i++) {
+   mm.live().setLiveModeOn(true);
+   sleep(200);
+   mm.live().setLiveModeOn(false);
+   sleep(300);
+   print("  Cycle " + (i+1) + " complete");
+}
+print("  Done. Check for 5 segment files.\n");
+
+// Test 5: Objective change (if objectives configured)
+print("Test 5: Objective Change...");
+try {
+   mm.core().setExposure(33);
+   mm.live().setLiveModeOn(true);
+   sleep(1000);
+   mm.live().setLiveModeOn(false);
+   sleep(500);
+   
+   // Change objective (adjust device name/state for your config)
+   mm.core().setState("Objective", 0); // e.g., 40X
+   sleep(200);
+   
+   mm.live().setLiveModeOn(true);
+   sleep(1000);
+   mm.live().setLiveModeOn(false);
+   print("  Done. Check scale bar changed between segments.\n");
+} catch (Exception e) {
+   print("  Skipped (no Objective device or pixel size config).\n");
+}
+
+print("=== Tests Complete ===");
+print("Review output files and CoreLog for results.");

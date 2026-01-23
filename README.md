@@ -162,6 +162,16 @@ Example: `experiment_2304x2304_seg001.mp4`
 
 See [TESTING.md](TESTING.md) for comprehensive test checklist.
 
+### Automated Test Script
+
+A BeanShell script is included for automated testing:
+
+1. Enable MP4Stream in the Processor Pipeline
+2. Configure output path in plugin settings
+3. Run via **Tools → Script Panel** → load `test_mp4stream.bsh`
+
+The script tests basic recording, fast/slow cameras, rapid start/stop, and objective changes.
+
 ### Verified (2026-01-22)
 
 Tested on **Windows 11** with **MM Studio 2.0.3** (nightly 20260116), **MMCore 11.11.0**, Java 11.0.27

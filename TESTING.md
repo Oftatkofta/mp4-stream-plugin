@@ -17,6 +17,18 @@
 
 ---
 
+## Automated Testing
+
+A BeanShell script (`test_mp4stream.bsh`) automates several core tests:
+
+1. Enable MP4Stream in Processor Pipeline
+2. Configure output path in plugin settings
+3. Run via **Tools → Script Panel** → load `test_mp4stream.bsh`
+
+The script covers Tests 1-4, 15, and 17 automatically. Manual testing is still recommended for overlay verification and edge cases.
+
+---
+
 ## Core Recording Tests
 
 ### Test 1: Basic Recording (Constant FPS)
