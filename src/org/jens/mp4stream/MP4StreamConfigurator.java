@@ -127,6 +127,17 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       double currentFps = getSettingDouble(KEY_TARGET_FPS, DEFAULT_TARGET_FPS);
       double currentTlFactor = getSettingDouble(KEY_TIMELAPSE_FACTOR, DEFAULT_TIMELAPSE_FACTOR);
 
+      // Snapshot PREFS so Cancel can restore them (immediate-save listeners mutate PREFS)
+      final String snapMode = PREFS.get(KEY_RECORDING_MODE, MODE_CONSTANT_FPS);
+      final double snapFps = PREFS.getDouble(KEY_TARGET_FPS, DEFAULT_TARGET_FPS);
+      final double snapTlFactor = PREFS.getDouble(KEY_TIMELAPSE_FACTOR, DEFAULT_TIMELAPSE_FACTOR);
+      final boolean snapTimestampEnabled = PREFS.getBoolean(KEY_TIMESTAMP_ENABLED, DEFAULT_TIMESTAMP_ENABLED);
+      final String snapTimestampColor = PREFS.get(KEY_TIMESTAMP_COLOR, DEFAULT_TIMESTAMP_COLOR);
+      final boolean snapTimestampBg = PREFS.getBoolean(KEY_TIMESTAMP_BACKGROUND, DEFAULT_TIMESTAMP_BACKGROUND);
+      final boolean snapScalebarEnabled = PREFS.getBoolean(KEY_SCALEBAR_ENABLED, DEFAULT_SCALEBAR_ENABLED);
+      final int snapFontSize = PREFS.getInt(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+      final double snapScalebarLength = PREFS.getDouble(KEY_SCALEBAR_LENGTH_UM, DEFAULT_SCALEBAR_LENGTH_UM);
+
       // Create dialog
       JDialog dialog = new JDialog();
       dialog.setTitle("MP4 Stream Settings");
@@ -256,7 +267,7 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
 
       // Enable/disable spinners based on mode, and save immediately
       Runnable updateSpinners = () -> {
-         fpsSpinner.setEnabled(rbConstant.isSelected());
+         fpsSpinner.setEnabled(rbConstant.isSelected() || rbTimelapse.isSelected());
          tlSpinner.setEnabled(rbTimelapse.isSelected());
          saveModeToPrefs.run(); // Save mode immediately when changed
       };
@@ -392,7 +403,17 @@ public final class MP4StreamConfigurator implements ProcessorConfigurator {
       dialog.setVisible(true);
 
       if (!accepted[0]) {
-         return; // User cancelled
+         // Restore PREFS to pre-dialog state (immediate-save listeners may have changed them)
+         PREFS.put(KEY_RECORDING_MODE, snapMode);
+         PREFS.putDouble(KEY_TARGET_FPS, snapFps);
+         PREFS.putDouble(KEY_TIMELAPSE_FACTOR, snapTlFactor);
+         PREFS.putBoolean(KEY_TIMESTAMP_ENABLED, snapTimestampEnabled);
+         PREFS.put(KEY_TIMESTAMP_COLOR, snapTimestampColor);
+         PREFS.putBoolean(KEY_TIMESTAMP_BACKGROUND, snapTimestampBg);
+         PREFS.putBoolean(KEY_SCALEBAR_ENABLED, snapScalebarEnabled);
+         PREFS.putInt(KEY_FONT_SIZE, snapFontSize);
+         PREFS.putDouble(KEY_SCALEBAR_LENGTH_UM, snapScalebarLength);
+         return;
       }
 
       // Save settings

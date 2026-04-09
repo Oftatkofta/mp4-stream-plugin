@@ -48,7 +48,7 @@ public final class MP4StreamPlugin implements ProcessorPlugin, MMPlugin {
 
    @Override
    public String getVersion() {
-      return "0.1.0";
+      return "1.0.1";
    }
 
    @Override

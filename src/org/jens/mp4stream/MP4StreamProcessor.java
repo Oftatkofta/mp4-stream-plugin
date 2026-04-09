@@ -1,18 +1,22 @@
 package org.jens.mp4stream;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 import org.micromanager.LogManager;
@@ -39,11 +43,9 @@ public final class MP4StreamProcessor implements Processor {
          Preferences.userNodeForPackage(MP4StreamConfigurator.class);
 
    private final Studio studio_;
-   private final PropertyMap settings_;
 
    public MP4StreamProcessor(Studio studio, PropertyMap settings) {
       studio_ = studio;
-      settings_ = settings;
    }
 
    // Reused per-dimension
@@ -89,7 +91,8 @@ public final class MP4StreamProcessor implements Processor {
 
    private long t0WallNanos_ = 0L;
 
-   private static final boolean USE_LIVE_DISPLAY_SCALING = true;
+   // Scale bar one-shot log per segment
+   private boolean scaleBarLoggedThisSegment_ = false;
 
    private static final String LOG_PREFIX = "[MP4Stream] ";
 
@@ -356,7 +359,8 @@ public final class MP4StreamProcessor implements Processor {
    }
 
    private void recordFrameIfConfigured(Image img) throws IOException {
-      final String outPath = getSettingString(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
+      // Read output path from PREFS (not stale settings_) so changes take effect immediately
+      final String outPath = PREFS.get(MP4StreamConfigurator.KEY_OUTPUT_PATH, "");
       if (outPath == null || outPath.trim().isEmpty()) {
          // Stop recording if output path is cleared
          if (ff_ != null) {
@@ -382,6 +386,9 @@ public final class MP4StreamProcessor implements Processor {
 
       // Start if needed, restart on dimension change
       if (ff_ == null || w != width_ || h != height_) {
+         if (ff_ == null) {
+            segmentIndex_ = 0; // Reset for new session; makeSegmentPath deduplicates
+         }
          startFfmpegForDimensions(outPath, w, h, img);
       } else {
          // Update watchdog timeout occasionally while actively recording (exposure can change mid-live).
@@ -390,14 +397,10 @@ public final class MP4StreamProcessor implements Processor {
 
       ensureBuffersForDimensions(w, h);
 
-      // Convert incoming pixels to gray8
-      if (USE_LIVE_DISPLAY_SCALING) {
-         DisplayScaling sc = getLiveDisplayScaling(img);
-         logScalingChangeIfNeeded(sc);
-         convertToGray8WithScaling(img, plane8_, sc.min, sc.max, sc.gamma);
-      } else {
-         convertToGray8(img, plane8_);
-      }
+      // Convert incoming pixels to gray8 using live display contrast settings
+      DisplayScaling sc = getLiveDisplayScaling(img);
+      logScalingChangeIfNeeded(sc);
+      convertToGray8WithScaling(img, plane8_, sc.min, sc.max, sc.gamma);
 
       // Δt overlay: prefer elapsed time, else received time, else wall clock.
       double dtSec = computeDeltaTSeconds(img);
@@ -505,7 +508,14 @@ public final class MP4StreamProcessor implements Processor {
       // MP4 cannot change resolution mid-stream. Segment output to new file.
       final String segPath = makeSegmentPath(baseOutPath, w, h, segmentIndex_);
 
-      final String ffmpegPath = getSettingString(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
+      // Validate output directory exists
+      File segFile = new File(segPath);
+      File parentDir = segFile.getParentFile();
+      if (parentDir != null && !parentDir.isDirectory()) {
+         throw new IOException("Output directory does not exist: " + parentDir.getAbsolutePath());
+      }
+
+      final String ffmpegPath = PREFS.get(MP4StreamConfigurator.KEY_FFMPEG_PATH, "");
       final String exe = (ffmpegPath == null || ffmpegPath.trim().isEmpty()) ? "ffmpeg" : ffmpegPath;
 
       // Determine effective output FPS based on mode
@@ -529,7 +539,6 @@ public final class MP4StreamProcessor implements Processor {
       // Build FFmpeg command as cmd-list
       List<String> cmd = new ArrayList<>();
       cmd.add(exe);
-      cmd.add("-y"); // overwrite existing file
       cmd.add("-f"); cmd.add("rawvideo"); // input format
       cmd.add("-pix_fmt"); cmd.add("gray"); // pixel format
       cmd.add("-s"); cmd.add(w + "x" + h); // size
@@ -648,11 +657,19 @@ public final class MP4StreamProcessor implements Processor {
          haveLastFrame_ = false;
       }
 
-      // Fill gaps using last frame (CFR)
+      // Fill gaps using last frame (CFR), capped to prevent runaway writes
+      long maxGapFrames = Math.max(300, (long) (targetFps_ * 10));
       if (haveLastFrame_) {
-         while (nextOutFrameIndex_ < targetIndex) {
+         long filled = 0;
+         while (nextOutFrameIndex_ < targetIndex && filled < maxGapFrames) {
             ff_.writeFrame(lastFrame8_);
             nextOutFrameIndex_++;
+            filled++;
+         }
+         if (nextOutFrameIndex_ < targetIndex) {
+            logWarn_("Gap-fill limit reached (" + maxGapFrames + " frames). Skipping "
+                  + (targetIndex - nextOutFrameIndex_) + " frames to recover.");
+            nextOutFrameIndex_ = targetIndex;
          }
       } else {
          nextOutFrameIndex_ = targetIndex;
@@ -854,9 +871,22 @@ public final class MP4StreamProcessor implements Processor {
       logInfo_("Stopping FFmpeg and finalizing MP4 file (" + frameCount + " frames)...");
       try {
          toClose.close();
-         logInfo_("FFmpeg finalized successfully (" + frameCount + " frames written).");
+         int exitCode = toClose.exitCode();
+         if (exitCode == 0) {
+            logInfo_("FFmpeg finalized successfully (" + frameCount + " frames written).");
+         } else {
+            logWarn_("FFmpeg exited with code " + exitCode + " (" + frameCount + " frames).");
+            List<String> stderr = toClose.getStderrTail();
+            if (!stderr.isEmpty()) {
+               StringBuilder sb = new StringBuilder("FFmpeg stderr (last " + stderr.size() + " lines):\n");
+               for (String line : stderr) {
+                  sb.append("  ").append(line).append('\n');
+               }
+               logWarn_(sb.toString());
+            }
+         }
       } catch (Exception e) {
-         logWarn_("FFmpeg close failed (ignored): " + e.getMessage());
+         logWarn_("FFmpeg close failed: " + e.getMessage());
       }
    }
 
@@ -975,33 +1005,33 @@ public final class MP4StreamProcessor implements Processor {
       System.arraycopy(plane8, 0, backing, 0, Math.min(plane8.length, backing.length));
 
       // Determine colors
-      java.awt.Color textColor = MP4StreamConfigurator.COLOR_BLACK.equals(timestampColor_) 
-            ? java.awt.Color.BLACK : java.awt.Color.WHITE;
-      java.awt.Color shadowColor = (textColor == java.awt.Color.WHITE) 
-            ? java.awt.Color.BLACK : java.awt.Color.WHITE;
-      java.awt.Color bgColor = new java.awt.Color(
+      Color textColor = MP4StreamConfigurator.COLOR_BLACK.equals(timestampColor_) 
+            ? Color.BLACK : Color.WHITE;
+      Color shadowColor = (textColor == Color.WHITE) ? Color.BLACK : Color.WHITE;
+      Color bgColor = new Color(
             shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 180);
 
       // Draw timestamp overlay (top-left)
       if (timestampEnabled_) {
          String text = "\u0394t " + formatElapsedHhMmSsMmm(dtSec);
          g2d_.setFont(new Font("Monospaced", Font.BOLD, fontSize_));
-         
+
          java.awt.FontMetrics fm = g2d_.getFontMetrics();
          int textWidth = fm.stringWidth(text);
          int textHeight = fm.getHeight();
+         int margin = 10;
+         int textX = margin;
+         int textY = margin + fm.getAscent();
 
          if (timestampBackground_) {
-            // Draw contrasting background box
             g2d_.setColor(bgColor);
-            g2d_.fillRect(5, 5, textWidth + 10, textHeight + 4);
+            g2d_.fillRect(margin - 5, margin - 2, textWidth + 10, textHeight + 4);
          }
 
-         // Draw text (with subtle shadow for readability)
          g2d_.setColor(shadowColor);
-         g2d_.drawString(text, 11, 22);
+         g2d_.drawString(text, textX + 1, textY + 1);
          g2d_.setColor(textColor);
-         g2d_.drawString(text, 10, 21);
+         g2d_.drawString(text, textX, textY);
       }
 
       // Draw scale bar (bottom-right) - read pixel size fresh each time
@@ -1017,10 +1047,8 @@ public final class MP4StreamProcessor implements Processor {
       System.arraycopy(backing, 0, plane8, 0, Math.min(plane8.length, backing.length));
    }
 
-   private boolean scaleBarLoggedThisSegment_ = false;
-
-   private void drawScaleBar(int w, int h, java.awt.Color textColor, 
-         java.awt.Color shadowColor, java.awt.Color bgColor, double pixelSizeUm) {
+   private void drawScaleBar(int w, int h, Color textColor, 
+         Color shadowColor, Color bgColor, double pixelSizeUm) {
       double scaleUm;
 
       if (scalebarLengthUm_ > 0) {
@@ -1092,51 +1120,17 @@ public final class MP4StreamProcessor implements Processor {
       g2d_.drawString(label, labelX, labelY);
    }
 
-   private String getSettingString(String key, String defaultValue) {
-      try {
-         if (settings_ != null) {
-            String v = settings_.getString(key, defaultValue);
-            if (v != null) {
-               return v;
-            }
-         }
-      } catch (Exception ignored) {}
-
-      // Fallback to Preferences (keeps behavior working even if settings_ is null)
-      try {
-         return PREFS.get(key, defaultValue);
-      } catch (Exception ignored) {
-         return defaultValue;
-      }
-   }
-
-   private double getSettingDouble(String key, double defaultValue) {
-      try {
-         if (settings_ != null) {
-            double v = settings_.getDouble(key, Double.NaN);
-            if (!Double.isNaN(v)) {
-               return v;
-            }
-         }
-      } catch (Exception ignored) {}
-
-      // Fallback to Preferences
-      try {
-         return PREFS.getDouble(key, defaultValue);
-      } catch (Exception ignored) {
-         return defaultValue;
-      }
-   }
 
    /**
-    * Minimal FFmpeg wrapper that drains stderr to avoid deadlocks.
-    * Note: this intentionally discards stderr output. If you want it logged, add
-    * a ring buffer or log lines at DEBUG (but be careful about volume).
+    * Minimal FFmpeg wrapper that captures stderr tail for diagnostics.
     */
    private static final class FfmpegSession implements AutoCloseable {
       private final Process proc_;
       private final OutputStream stdin_;
       private final Thread stderrDrainer_;
+      private final ArrayList<String> stderrTail_ = new ArrayList<>();
+      private static final int MAX_STDERR_LINES = 50;
+      private static final int CLOSE_TIMEOUT_SECONDS = 30;
 
       FfmpegSession(List<String> cmd) throws IOException {
          ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -1144,7 +1138,7 @@ public final class MP4StreamProcessor implements Processor {
          proc_ = pb.start();
          stdin_ = new BufferedOutputStream(proc_.getOutputStream(), 1 << 20);
 
-         stderrDrainer_ = new Thread(() -> drain(proc_.getErrorStream()), "ffmpeg-stderr");
+         stderrDrainer_ = new Thread(() -> captureStderr(proc_.getErrorStream()), "ffmpeg-stderr");
          stderrDrainer_.setDaemon(true);
          stderrDrainer_.start();
       }
@@ -1153,36 +1147,46 @@ public final class MP4StreamProcessor implements Processor {
          stdin_.write(gray8);
       }
 
-      @Override
-      public void close() throws IOException {
+      int exitCode() {
          try {
-            stdin_.flush();
-         } catch (Exception ignored) {}
-
-         try {
-            stdin_.close();
-         } catch (Exception ignored) {}
-
-         try {
-            proc_.waitFor();
-         } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-         } finally {
-            proc_.destroy();
+            return proc_.exitValue();
+         } catch (IllegalThreadStateException e) {
+            return -1;
          }
       }
 
-      private static void drain(InputStream in) {
-         byte[] buf = new byte[8192];
+      List<String> getStderrTail() {
+         synchronized (stderrTail_) {
+            return new ArrayList<>(stderrTail_);
+         }
+      }
+
+      @Override
+      public void close() throws IOException {
+         try { stdin_.flush(); } catch (Exception ignored) {}
+         try { stdin_.close(); } catch (Exception ignored) {}
          try {
-            while (in.read(buf) >= 0) {
-               // discard
+            if (!proc_.waitFor(CLOSE_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+               proc_.destroyForcibly();
+            }
+         } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            proc_.destroyForcibly();
+         }
+      }
+
+      private void captureStderr(InputStream in) {
+         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+               synchronized (stderrTail_) {
+                  stderrTail_.add(line);
+                  while (stderrTail_.size() > MAX_STDERR_LINES) {
+                     stderrTail_.remove(0);
+                  }
+               }
             }
          } catch (IOException ignored) {
-         } finally {
-            try {
-               in.close();
-            } catch (Exception ignored2) {}
          }
       }
    }

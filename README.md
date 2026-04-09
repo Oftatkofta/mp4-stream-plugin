@@ -93,7 +93,7 @@ Click the Configure... button next to the plugin to open settings:
 | **Output file** | Base path for MP4 output (actual files get `_WxH_segNNN.mp4` suffix) |
 | **FFmpeg path** | Path to ffmpeg.exe (leave empty to use system PATH) |
 | **Recording Mode** | See Recording Modes below |
-| **FPS** | Target output framerate (for Constant FPS mode) |
+| **FPS** | Target output framerate (Constant FPS and Time-lapse modes) |
 | **Time-lapse factor** | Playback speedup multiplier (for Time-lapse mode) |
 
 ### Overlay Settings
@@ -111,7 +111,7 @@ The scale bar displays in µm or mm depending on length.
 
 ### Recording Modes
 
-All modes output video at the configured **target FPS** (default 30 fps). The modes differ in how they handle the timing of incoming frames.
+Constant FPS and Time-lapse modes output video at the configured **target FPS** (default 30 fps). Real-time mode writes every frame once at actual capture timing. The modes differ in how they handle incoming frames:
 
 #### Constant FPS (default)
 - Output video plays at exactly the specified FPS
@@ -257,7 +257,7 @@ To enable debug logging, use Micro-Manager's debug mode or check the CoreLog aft
 
 ### FFmpeg Command
 ```
-ffmpeg -y -f rawvideo -pix_fmt gray -s WxH -r FPS -i - 
+ffmpeg -f rawvideo -pix_fmt gray -s WxH -r FPS -i - 
        -an -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p output.mp4
 ```
 
